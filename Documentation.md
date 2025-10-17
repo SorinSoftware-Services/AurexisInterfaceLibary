@@ -1,118 +1,129 @@
 # SorinInterfaceUI Documentation
 ![SorinInterfaceUI](https://i.postimg.cc/52CtPNZV/si-UI-Banner.png)
 
-This documentation is based on the **Luna Interface Suite** by *Nebula Softworks* and has been rebuilt and extended by **SorinSoftware Services** — offering a modern, fast, and visually refined UI experience.
+**SorinInterfaceUI** is a modern, lightweight, and visually refined UI library built upon the foundations of *Luna Interface Suite* by **Nebula Softworks**.  
+This rebuild by **SorinSoftware Services** focuses on clarity, modularity, and developer control — designed for creators who value both **aesthetics** and **efficiency**.
 
-_Last updated for SorinInterfaceUI Beta 0.3_
+> _“Modern UI. Simple. Fast. Reliable.”_ — SorinSoftware Services  
 
----
-
-## Why Choose SorinInterfaceUI?
-
-Reliable and elegant. Designed for developers who value both **aesthetic** and **efficiency**.
-
-- 🧩 **Built on a proven foundation** – inspired by Luna Interface Suite.  
-- ⚡ **Better performance** and optimized rendering.  
-- 🔧 **Improved functions** for better User Experience. 
+_Last updated: October 2025 – Beta 0.3_
 
 ---
 
-# Documentation for SorinInterfaceUI
+## 🌌 Introduction
+SorinInterfaceUI provides a modular and flexible UI framework for Roblox developers.  
+It is written in **LuaU**, optimized for performance, and built for extendability.
 
-## Booting the Library
+- 🧩 Modular architecture  
+- ⚡ Fast rendering and threading  
+- 🎨 Consistent Sorin-styled visuals  
+- 🧠 Built-in Config, Theme, and Key systems  
+
+---
+
+## 🚀 Getting Started
+
+### Booting the Library
 ```lua
-local Sorin = loadstring(game:HttpGet("https://raw.githubusercontent.sorinservice/SorinInterfaceUI/main.lua", true))()
+local Sorin = loadstring(game:HttpGet("https://raw.githubusercontent.com/sorinservice/SorinInterfaceUI/main/main.lua", true))()
 ```
-> **Note:** SorinInterfaceUI automatically handles configuration loading and saving. Manual setup is optional unless you disable auto-config.
+> Once loaded, the `Sorin` Libary, u can use our Elements. No parameters required.
+ 
+>[!NOTE]
+>Sorin provides automatic configuration management, allowing users to load, save, and autoload their settings without manual intervention.
 
 ---
 
-## Windows
+## Window
+#### 🪟 Creating a Window
+>[!IMPORTANT]
+>Sorin’s glassmorphic interface needs Graphics Level 8+ to properly render depth and transparency effects.
 
-### Creating a Window
+
 ```lua
 local Window = Sorin:CreateWindow({
-  Name = "Sorin Example Window",
-  Subtitle = "Modern UI Framework",
-  LogoID = "77656423525793", -- Replace with your asset ID or nil
-  LoadingEnabled = true,
-  LoadingTitle = "Sorin Interface UI",
-  LoadingSubtitle = "Powered by SorinSoftware",
+  Name = "Sorin Example Window", -- The main title displayed at the top of the interface
+  Subtitle = "Powered by SorinSoftware", -- Appears next to the main title in gray text
+  LogoID = "77656423525793", -- Optional logo [Asset ID!] (top-left corner). Set to nil to hide the logo.
+
+  LoadingEnabled = true, -- Displays a loading animation on startup
+  LoadingTitle = "Sorin InterfaceUI", -- Header text shown during loading
+  LoadingSubtitle = "Loading Environment...", -- Subtext displayed below the loading title
 
   ConfigSettings = {
-    RootFolder = nil,         -- Optional: for multi-hub setups
-    ConfigFolder = "SorinHub" -- Folder name for configs
+    RootFolder = nil, -- Used only for multi-hub projects. Leave nil for standalone UIs.
+    ConfigFolder = "SorinHubConfig" -- Folder where Sorin will store user configuration files
   },
 
-  KeySystem = false,
+  KeySystem = false, -- Enables built-in key system for script access control
   KeySettings = {
-    Title = "Sorin Example Key",
-    Subtitle = "Key System",
-    Note = "Supports HWID-based verification systems.",
-    SaveInRoot = false,
-    SaveKey = true,
-    Key = {"SORIN_EXAMPLE_KEY"},
-    SecondAction = {
-      Enabled = false
+    Title = "Sorin Example Key", -- Window title for the key system
+    Subtitle = "Key System", -- Subtitle shown in the key prompt
+    Note = "Use an HWID key system (e.g. Pelican, Luarmor). Static keys are insecure and easy to bypass.", -- Small informational note for users
+    SaveInRoot = false, -- (Optional) Save key in the RootFolder instead of the config folder
+    SaveKey = true, -- Saves user key locally to skip re-entry next time
+    Key = {"EXAMPLE_KEY_1", "EXAMPLE_KEY_2"}, -- List of accepted keys. [Please don´t do this if u want a safe Key System]
+    SecondAction = { -- Optional: Additional link or redirect
+      Enabled = true, -- Set to false to disable the secondary action
+      Type = "Link", -- Accepts: "Link" or "Discord"
+      Parameter = "https://discord.gg/XXXXXXXXXX" -- Full link or Discord invite code
     }
   }
 })
 ```
-> **Important:** Sorin’s structure is compatible with Luna, but has improved internal synchronization and a cleaner config engine.
+> **Note:**  
+> Only one window can exist per script.  
+> Sorin automatically initializes its config and theme systems.
+
+> [!IMPORTANT]  
+> Always include the line `Sorin:LoadAutoloadConfig()` **at the end of your script**.  
+> This ensures Sorin automatically loads any previously saved user configuration when the interface starts.
+
 
 ---
 
-### Creating Tabs
+## 🧭 Create Tabs
+Tabs organize your interface into logical sections.
+
 ```lua
 local Tab = Window:CreateTab({
-  Name = "Main Controls",
+  Name = "Example Tab Name",
   Icon = "settings",
   ImageSource = "Material",
-  ShowTitle = true
+  ShowTitle = true -- Determines whether the large title text is displayed at the top of the tab
 })
 ```
+---
+## Create Sections
+
 
 ---
 
-## Elements and Interactions
+## 🎛️ Elements
 
-### Notifications
-```lua
-Sorin:Notification({
-  Title = "Notification Example",
-  Icon = "bell",
-  ImageSource = "Lucide",
-  Content = "This is a Sorin-style notification — elegant, minimal, and fast."
-})
-```
-> **Tip:** Use Sorin’s icon abstraction layer (Lucide / Material / Custom) to switch icon styles without rewriting UI code.
-
----
-
-### Buttons
+### Button
 ```lua
 local Button = Tab:CreateButton({
   Name = "Run Example",
-  Description = "Executes a simple action.",
+  Description = "Executes a sample action.",
   Callback = function()
-    print("Sorin Button Activated")
+    print("Button activated!")
   end
 })
 ```
 
-### Toggles
+### Toggle
 ```lua
 local Toggle = Tab:CreateToggle({
   Name = "Enable Feature",
-  Description = "Activates or deactivates an internal module.",
   CurrentValue = false,
   Callback = function(Value)
     print("Feature state:", Value)
   end
-}, "FeatureToggle")
+})
 ```
 
-### Sliders
+### Slider
 ```lua
 local Slider = Tab:CreateSlider({
   Name = "Speed Adjustment",
@@ -122,58 +133,85 @@ local Slider = Tab:CreateSlider({
   Callback = function(Value)
     print("Speed set to:", Value)
   end
-}, "SpeedSlider")
+})
 ```
 
-### Inputs
+### Input
 ```lua
 local Input = Tab:CreateInput({
   Name = "Username",
-  Description = "Enter your player name.",
-  PlaceholderText = "Your name here...",
-  CurrentValue = "",
-  Numeric = false,
-  MaxCharacters = 20,
+  PlaceholderText = "Enter your name...",
   Callback = function(Text)
-    print("Entered:", Text)
+    print("User entered:", Text)
   end
-}, "UsernameInput")
+})
 ```
 
-### Dropdowns
+### Dropdown
 ```lua
 local Dropdown = Tab:CreateDropdown({
   Name = "Executor",
-  Description = "Select your executor.",
   Options = {"Krnl", "Delta", "Wave", "Solara"},
   CurrentOption = {"Krnl"},
-  MultipleOptions = false,
   Callback = function(Option)
     print("Selected:", Option)
   end
-}, "ExecutorDropdown")
+})
 ```
 
 ---
 
-## Configuration and Theming
+## 🧩 Sections & Dividers
+```lua
+Tab:CreateSection("System Settings")
+Tab:CreateDivider()
+```
+Sections and dividers help visually separate interface areas.
 
-### Build Theme Section
+---
+
+## 🧠 Configuration and Themes
+
+### Theme Section
 ```lua
 Tab:BuildThemeSection()
 ```
+> Lets users change accent colors and apply Sorin’s built-in themes.
 
-### Build Config Section
+### Config Section
 ```lua
 Tab:BuildConfigSection()
 ```
-> **Warning:** Keep your configuration section **at the bottom** of the script for autoload to work properly.
+> Handles saving and loading of user preferences.  
+> Place this **at the end of your script** for auto-load to work.
 
 ---
 
-## Compatibility
+## 🔔 Notifications
+```lua
+Sorin:Notification({
+  Title = "Sorin Notification",
+  Icon = "bell",
+  ImageSource = "Lucide",
+  Content = "This is a Sorin-style notification."
+})
+```
+> Use notifications to inform users about actions or updates.  
+> They fade automatically and use Sorin’s minimal style.
 
-SorinInterfaceUI remains compatible with existing **Luna-based scripts** and can be dropped into projects with minimal to no changes.
+---
+
+## ⚙️ Destroying the Interface
+```lua
+Sorin:Destroy()
+```
+Safely closes and cleans up the interface instance.
+
+---
+
+## 🪄 Migration from Luna Interface
+SorinInterfaceUI is backward-compatible with Luna scripts.  
+Most element names and creation methods remain identical.
 
 ```lua
 local Sorin = loadstring(game:HttpGet("https://sorinservice.github.io/SorinInterfaceUI/main.lua"))()
@@ -185,14 +223,16 @@ local Window = Sorin:CreateWindow({
 
 ---
 
-## Credits
+## 👥 Credits
 
 | Role | Name |
-|------|------|
+|:------|:------|
 | Original Framework | **Nebula Softworks** – Luna Interface Suite |
 | Core Rework & Redesign | **Wyatt (SorinSoftware Services)** |
 | Additional Support | Sorin Contributors & Testers |
 
 ---
 
-> *“Modern UI library. Simple. Fast. Reliable.”* — SorinSoftware Services
+<p align="center">
+  <sub>© 2025 SorinSoftware Services — Part of the Sorin Ecosystem.</sub>
+</p>
