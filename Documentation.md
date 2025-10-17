@@ -1,9 +1,9 @@
 # SorinInterfaceUI Documentation
-![SorinInterfaceUI](https://raw.githubusercontent.com/sorinservice/SorinInterfaceUI-Docs/main/static/img/SorinInterfaceUI-Banner.jpg)
+![SorinInterfaceUI](https://i.postimg.cc/52CtPNZV/si-UI-Banner.png)
 
 This documentation is based on the **Luna Interface Suite** by *Nebula Softworks* and has been rebuilt and extended by **SorinSoftware Services** — offering a modern, fast, and visually refined UI experience.
 
-_Last updated for SorinInterfaceUI Beta 1.0_
+_Last updated for SorinInterfaceUI Beta 0.3_
 
 ---
 
@@ -12,10 +12,8 @@ _Last updated for SorinInterfaceUI Beta 1.0_
 Reliable and elegant. Designed for developers who value both **aesthetic** and **efficiency**.
 
 - 🧩 **Built on a proven foundation** – inspired by Luna Interface Suite.  
-- 🎨 **Enhanced visuals** – Sorin’s galactic theme and refined glassmorphism.  
 - ⚡ **Better performance** and optimized rendering.  
-- 🔧 **Extended API support** and flexible modularity.  
-- 🔒 **Secure configurations** and key-based systems.
+- 🔧 **Improved functions** for better User Experience. 
 
 ---
 
@@ -23,7 +21,7 @@ Reliable and elegant. Designed for developers who value both **aesthetic** and *
 
 ## Booting the Library
 ```lua
-local Sorin = loadstring(game:HttpGet("https://sorinservice.github.io/SorinInterfaceUI/main.lua", true))()
+local Sorin = loadstring(game:HttpGet("https://raw.githubusercontent.sorinservice/SorinInterfaceUI/main.lua", true))()
 ```
 > **Note:** SorinInterfaceUI automatically handles configuration loading and saving. Manual setup is optional unless you disable auto-config.
 
