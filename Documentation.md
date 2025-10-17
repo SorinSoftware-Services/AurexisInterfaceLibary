@@ -193,11 +193,11 @@ Sorin:Notification({
   Title = "Sorin Notification",
   Icon = "bell",
   ImageSource = "Lucide",
-  Content = "This is a Sorin-style notification."
+  Content = "This is a Test notification."
 })
 ```
 > Use notifications to inform users about actions or updates.  
-> They fade automatically and use Sorin’s minimal style.
+> They fade automatically.
 
 ---
 
@@ -207,19 +207,6 @@ Sorin:Destroy()
 ```
 Safely closes and cleans up the interface instance.
 
----
-
-## 🪄 Migration from Luna Interface
-SorinInterfaceUI is backward-compatible with Luna scripts.  
-Most element names and creation methods remain identical.
-
-```lua
-local Sorin = loadstring(game:HttpGet("https://sorinservice.github.io/SorinInterfaceUI/main.lua"))()
-local Window = Sorin:CreateWindow({
-  Name = "Migration Example",
-  Subtitle = "Luna → Sorin made easy."
-})
-```
 
 ---
 
@@ -228,11 +215,13 @@ local Window = Sorin:CreateWindow({
 | Role | Name |
 |:------|:------|
 | Original Framework | **Nebula Softworks** – Luna Interface Suite |
-| Core Rework & Redesign | **Wyatt (SorinSoftware Services)** |
-| Additional Support | Sorin Contributors & Testers |
+| Core Rework & Redesign | **SorinSoftware Services** |
+| Additional Support | **Script Testers** |
 
 ---
 
 <p align="center">
-  <sub>© 2025 SorinSoftware Services — Part of the Sorin Ecosystem.</sub>
+  <sub>© 2025 SorinSoftware Services — Part of the Sorin Ecosystem.</sub><br>
+  <sub>Please note that this library is based on the <b>Luna Interface Suite</b> by <b>Nebula Softworks</b>, which was discontinued in April 2025.</sub>
 </p>
+
