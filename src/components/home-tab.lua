@@ -1,4 +1,7 @@
-function Window:CreateHomeTab(HomeTabSettings)
+-- src/components/home-tab.lua
+return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
+    function Window:CreateHomeTab(HomeTabSettings)
+
 
 	HomeTabSettings = Kwargify({
 		Icon = 1,
@@ -180,4 +183,4 @@ function Window:CreateHomeTab(HomeTabSettings)
 			checkFriends()
 		end
 	end)()
-end -- end of Window:CreateHomeTab(HomeTabSettings)
+end 
