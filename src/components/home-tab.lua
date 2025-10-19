@@ -1,6 +1,10 @@
 -- src/components/home-tab.lua
 print("[Aurexis] HomeTab module loaded successfully")
 
+local Players     = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+
 return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
     function Window:CreateHomeTab(HomeTabSettings)
 
