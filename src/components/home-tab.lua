@@ -169,25 +169,40 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		return format(Hours) .. ":" .. format(Minutes) .. ":" .. format(Seconds)
 	end
 
-	coroutine.wrap(function()
-		while task.wait() do
-			-- Players
-			HomeTabPage.detailsholder.dashboard.Server.Players.Value.Text = #Players:GetPlayers() .. " playing"
-			HomeTabPage.detailsholder.dashboard.Server.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
+		coroutine.wrap(function()
+	local refreshTimer = 0
 
-			-- Ping
-			HomeTabPage.detailsholder.dashboard.Server.Latency.Value.Text =
-				isStudio and tostring(math.round((Players.LocalPlayer:GetNetworkPing() * 2) / 0.01)) .. "ms"
-				or tostring(math.floor(getPing()) .. "ms")
+	while task.wait(0.5) do
+		-- 🧭 Serverinformationen aktualisieren
+		HomeTabPage.detailsholder.dashboard.Server.Players.Value.Text = #Players:GetPlayers() .. " playing"
+		HomeTabPage.detailsholder.dashboard.Server.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
 
-			-- Time
-			HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
+		HomeTabPage.detailsholder.dashboard.Server.Latency.Value.Text =
+			isStudio and tostring(math.round((Players.LocalPlayer:GetNetworkPing() * 2) / 0.01)) .. "ms"
+			or tostring(math.floor(getPing())) .. "ms"
 
-			-- Region
-			HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
+		HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
+		HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
 
-			checkFriends()
+		-- 🕒 Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
+		if refreshTimer <= 0 then
+			task.spawn(function()
+				local ok, err = pcall(checkFriends)
+				if not ok then
+					if string.find(tostring(err), "429") then
+						warn("[HomeTab] Rate limit hit, pausing 60 s")
+						refreshTimer = 60
+					else
+						warn("[HomeTab] Friend check failed:", err)
+						refreshTimer = 30
+					end
+				else
+					refreshTimer = 30
+				end
+			end)
+		else
+			refreshTimer -= 0.5
 		end
-	end)()
+	end
+end)()
 end 
-end
