@@ -1,45 +1,31 @@
-print([[
-
-                                                                                            
- sSSSSSSSs                            ii               HH        HH               BB           
-sSs     sSs                           II               HH        HH               BB           
-SSs                                                    HH        HH               BB           
-sSSSSSSSs     oOOOOOOOo   RRrRRRRRrr  II  NNnNNNNNNn   HHhhhhhhhhHH  UU       UU  BBBBBBBBBb   
-  ssSSSSSss  oOO     OOo  RRRr   rRR  II  NNNn   nNNN  HHhhhhhhhhHH  UU       UU  BBBb    bBB  
-        sSS  OO       OO  RR          II  NN       NN  HH        HH  UU       UU  BB       BB  
-sSs     sSS  oOOo   oOOo  RR          II  NN       NN  HH        HH  uUUu   uUUU  BBBb   bBBb  
- sSSSSSSSs    oOOOOOOOo   RR          II  NN       NN  HH        HH   uUUUUUUuUU  BBbBBBBBBb   
-                                                                                               
-                           Invented by SorinSoftware Services
-	                       Source: Luna Hub by Nebula Softworks
-	
-]])
-
 --[[                                                                                                                                                   
 
-      SSSSSSSSS            
-   SSSSSSSSSSSSSSS                                       iiii                        HHHHHHHHH     HHHHHHHHH                 b::::::b            
- SS:::::::::::::::S                                     i::::i                       H:::::::H     H:::::::H                 b::::::b            
-S:::::SSSSSS::::::S                                      iiii                        H:::::::H     H:::::::H                 b::::::b            
-S:::::S     SSSSSSS                                                                  HH::::::H     H::::::HH                  b:::::b            
-S:::::S               ooooooooooo   rrrrr   rrrrrrrrr  iiiiiiinnnn  nnnnnnnn           H:::::H     H:::::H  uuuuuu    uuuuuu  b:::::bbbbbbbbb    
-S:::::S             oo:::::::::::oo r::::rrr:::::::::r i:::::in:::nn::::::::nn         H:::::H     H:::::H  u::::u    u::::u  b::::::::::::::bb  
- S::::SSSS         o:::::::::::::::or:::::::::::::::::r i::::in::::::::::::::nn        H::::::HHHHH::::::H  u::::u    u::::u  b::::::::::::::::b 
-  SS::::::SSSSS    o:::::ooooo:::::orr::::::rrrrr::::::ri::::inn:::::::::::::::n       H:::::::::::::::::H  u::::u    u::::u  b:::::bbbbb:::::::b
-    SSS::::::::SS  o::::o     o::::o r:::::r     r:::::ri::::i  n:::::nnnn:::::n       H:::::::::::::::::H  u::::u    u::::u  b:::::b    b::::::b
-       SSSSSS::::S o::::o     o::::o r:::::r     rrrrrrri::::i  n::::n    n::::n       H::::::HHHHH::::::H  u::::u    u::::u  b:::::b     b:::::b
-            S:::::So::::o     o::::o r:::::r            i::::i  n::::n    n::::n       H:::::H     H:::::H  u::::u    u::::u  b:::::b     b:::::b
-            S:::::So::::o     o::::o r:::::r            i::::i  n::::n    n::::n       H:::::H     H:::::H  u:::::uuuu:::::u  b:::::b     b:::::b
-SSSSSSS     S:::::So:::::ooooo:::::o r:::::r           i::::::i n::::n    n::::n     HH::::::H     H::::::HHu:::::::::::::::uub:::::bbbbbb::::::b
-S::::::SSSSSS:::::So:::::::::::::::o r:::::r           i::::::i n::::n    n::::n     H:::::::H     H:::::::H u:::::::::::::::ub::::::::::::::::b 
-S:::::::::::::::SS  oo:::::::::::oo  r:::::r           i::::::i n::::n    n::::n     H:::::::H     H:::::::H  uu::::::::uu:::ub:::::::::::::::b  
- SSSSSSSSSSSSSSS      ooooooooooo    rrrrrrr           iiiiiiii nnnnnn    nnnnnn     HHHHHHHHH     HHHHHHHHH    uuuuuuuu  uuuubbbbbbbbbbbbbbbb   
-            ___              _                             _     _           ___          _      ___              _           
-           |   \ _____ _____| |___ _ __  ___ _ __  ___ _ _| |_  | |__ _  _  / __| ___ _ _(_)_ _ / __| ___ _ ___ _(_)__ ___ ___
-           | |) / -_) V / -_) / _ \ '_ \/ -_) '  \/ -_) ' \  _| | '_ \ || | \__ \/ _ \ '_| | ' \\__ \/ -_) '_\ V / / _/ -_|_-<
-           |___/\___|\_/\___|_\___/ .__/\___|_|_|_\___|_||_\__| |_.__/\_, | |___/\___/_| |_|_||_|___/\___|_|  \_/|_\__\___/__/
-                                   |_|                                 |__/                                                                                                                            
-                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                   
+   SSSSSSSSSSSSSSS                                       iiii                   IIIIIIIIII                         tttt                                                     ffffffffffffffff                                                        UUUUUUUU     UUUUUUUUIIIIIIIIII
+ SS:::::::::::::::S                                     i::::i                  I::::::::I                      ttt:::t                                                    f::::::::::::::::f                                                       U::::::U     U::::::UI::::::::I
+S:::::SSSSSS::::::S                                      iiii                   I::::::::I                      t:::::t                                                   f::::::::::::::::::f                                                      U::::::U     U::::::UI::::::::I
+S:::::S     SSSSSSS                                                             II::::::II                      t:::::t                                                   f::::::fffffff:::::f                                                      UU:::::U     U:::::UUII::::::II
+S:::::S               ooooooooooo   rrrrr   rrrrrrrrr  iiiiiiinnnn  nnnnnnnn      I::::Innnn  nnnnnnnn    ttttttt:::::ttttttt        eeeeeeeeeeee    rrrrr   rrrrrrrrr    f:::::f       ffffffaaaaaaaaaaaaa      cccccccccccccccc    eeeeeeeeeeee    U:::::U     U:::::U   I::::I  
+S:::::S             oo:::::::::::oo r::::rrr:::::::::r i:::::in:::nn::::::::nn    I::::In:::nn::::::::nn  t:::::::::::::::::t      ee::::::::::::ee  r::::rrr:::::::::r   f:::::f             a::::::::::::a   cc:::::::::::::::c  ee::::::::::::ee  U:::::D     D:::::U   I::::I  
+ S::::SSSS         o:::::::::::::::or:::::::::::::::::r i::::in::::::::::::::nn   I::::In::::::::::::::nn t:::::::::::::::::t     e::::::eeeee:::::eer:::::::::::::::::r f:::::::ffffff       aaaaaaaaa:::::a c:::::::::::::::::c e::::::eeeee:::::eeU:::::D     D:::::U   I::::I  
+  SS::::::SSSSS    o:::::ooooo:::::orr::::::rrrrr::::::ri::::inn:::::::::::::::n  I::::Inn:::::::::::::::ntttttt:::::::tttttt    e::::::e     e:::::err::::::rrrrr::::::rf::::::::::::f                a::::ac:::::::cccccc:::::ce::::::e     e:::::eU:::::D     D:::::U   I::::I  
+    SSS::::::::SS  o::::o     o::::o r:::::r     r:::::ri::::i  n:::::nnnn:::::n  I::::I  n:::::nnnn:::::n      t:::::t          e:::::::eeeee::::::e r:::::r     r:::::rf::::::::::::f         aaaaaaa:::::ac::::::c     ccccccce:::::::eeeee::::::eU:::::D     D:::::U   I::::I  
+       SSSSSS::::S o::::o     o::::o r:::::r     rrrrrrri::::i  n::::n    n::::n  I::::I  n::::n    n::::n      t:::::t          e:::::::::::::::::e  r:::::r     rrrrrrrf:::::::ffffff       aa::::::::::::ac:::::c             e:::::::::::::::::e U:::::D     D:::::U   I::::I  
+            S:::::So::::o     o::::o r:::::r            i::::i  n::::n    n::::n  I::::I  n::::n    n::::n      t:::::t          e::::::eeeeeeeeeee   r:::::r             f:::::f            a::::aaaa::::::ac:::::c             e::::::eeeeeeeeeee  U:::::D     D:::::U   I::::I  
+            S:::::So::::o     o::::o r:::::r            i::::i  n::::n    n::::n  I::::I  n::::n    n::::n      t:::::t    tttttte:::::::e            r:::::r             f:::::f           a::::a    a:::::ac::::::c     ccccccce:::::::e           U::::::U   U::::::U   I::::I  
+SSSSSSS     S:::::So:::::ooooo:::::o r:::::r           i::::::i n::::n    n::::nII::::::IIn::::n    n::::n      t::::::tttt:::::te::::::::e           r:::::r            f:::::::f          a::::a    a:::::ac:::::::cccccc:::::ce::::::::e          U:::::::UUU:::::::U II::::::II
+S::::::SSSSSS:::::So:::::::::::::::o r:::::r           i::::::i n::::n    n::::nI::::::::In::::n    n::::n      tt::::::::::::::t e::::::::eeeeeeee   r:::::r            f:::::::f          a:::::aaaa::::::a c:::::::::::::::::c e::::::::eeeeeeee   UU:::::::::::::UU  I::::::::I
+S:::::::::::::::SS  oo:::::::::::oo  r:::::r           i::::::i n::::n    n::::nI::::::::In::::n    n::::n        tt:::::::::::tt  ee:::::::::::::e   r:::::r            f:::::::f           a::::::::::aa:::a cc:::::::::::::::c  ee:::::::::::::e     UU:::::::::UU    I::::::::I
+ SSSSSSSSSSSSSSS      ooooooooooo    rrrrrrr           iiiiiiii nnnnnn    nnnnnnIIIIIIIIIInnnnnn    nnnnnn          ttttttttttt      eeeeeeeeeeeeee   rrrrrrr            fffffffff            aaaaaaaaaa  aaaa   cccccccccccccccc    eeeeeeeeeeeeee       UUUUUUUUU      IIIIII
+                            ___              _                  _   _           ___          _      ___       __ _                         ___              _           
+                           |   \ _____ _____| |___ _ __  ___ __| | | |__ _  _  / __| ___ _ _(_)_ _ / __| ___ / _| |___ __ ____ _ _ _ ___  / __| ___ _ ___ _(_)__ ___ ___
+                           | |) / -_) V / -_) / _ \ '_ \/ -_) _` | | '_ \ || | \__ \/ _ \ '_| | ' \\__ \/ _ \  _|  _\ V  V / _` | '_/ -_) \__ \/ -_) '_\ V / / _/ -_|_-<
+                           |___/\___|\_/\___|_\___/ .__/\___\__,_| |_.__/\_, | |___/\___/_| |_|_||_|___/\___/_|  \__|\_/\_/\__,_|_| \___| |___/\___|_|  \_/|_\__\___/__/
+                                                   |_|                    |__/                                                                                            
+
+
 Main Credits
 Luna Interface Suite
 by Nebula Softworks
