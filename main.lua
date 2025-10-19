@@ -33,12 +33,12 @@ by Nebula Softworks
 
 ]]
 
-local BASE_URL = "https://raw.githubusercontent.com/sorinservice/SorinInterfaceUI/main/"
+local BASE_URL = "https://raw.githubusercontent.com/sorinservice/AurexisInterfaceLibary/main/"
 
 local Release = "Closed Beta [v 0.3]"
 
-local Sorin = { 
-	Folder = "SorinLibary UI", 
+local Aurexis = { 
+	Folder = "AurexisLibary UI", 
 	Options = {}, 
 	ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(117, 164, 206)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(123, 201, 201)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(224, 138, 175))} 
 }
@@ -177,7 +177,7 @@ local function BlurModule(Frame)
 	local MTREL = "Glass"
 	local binds = {}
 	local root = Instance.new('Folder', camera)
-	root.Name = 'SorinBlur'
+	root.Name = 'AurexisBlur'
 
 	local gTokenMH = 99999999
 	local gToken = math.random(1, gTokenMH)
@@ -382,7 +382,7 @@ local function unpackt(array : table)
 end
 
 -- Interface Management
-local SorinUI = isStudio and script.Parent:WaitForChild("Sorin UI") or game:GetObjects("rbxassetid://86467455075715")[1]
+local AurexisUI = isStudio and script.Parent:WaitForChild("Aurexis UI") or game:GetObjects("rbxassetid://86467455075715")[1]
 
 local SizeBleh = nil
 
@@ -391,7 +391,7 @@ local function Hide(Window, bind, notif)
 	bind = string.split(tostring(bind), "Enum.KeyCode.")
 	bind = bind[2]
 	if notif then
-		Sorin:Notification({Title = "Interface Hidden", Content = "The interface has been hidden, you can reopen the interface by Pressing ("..tostring(bind)..")", Icon = "visibility_off"})
+		Aurexis:Notification({Title = "Interface Hidden", Content = "The interface has been hidden, you can reopen the interface by Pressing ("..tostring(bind)..")", Icon = "visibility_off"})
 	end
 	tween(Window, {BackgroundTransparency = 1})
 	tween(Window.Elements, {BackgroundTransparency = 1})
@@ -428,49 +428,49 @@ end
 
 
 if gethui then
-	SorinUI.Parent = gethui()
+	AurexisUI.Parent = gethui()
 elseif syn and syn.protect_gui then 
-	syn.protect_gui(SorinUI)
-	SorinUI.Parent = CoreGui
+	syn.protect_gui(AurexisUI)
+	AurexisUI.Parent = CoreGui
 elseif not isStudio and CoreGui:FindFirstChild("RobloxGui") then
-	SorinUI.Parent = CoreGui:FindFirstChild("RobloxGui")
+	AurexisUI.Parent = CoreGui:FindFirstChild("RobloxGui")
 elseif not isStudio then
-	SorinUI.Parent = CoreGui
+	AurexisUI.Parent = CoreGui
 end
 
 if gethui then
 	for _, Interface in ipairs(gethui():GetChildren()) do
-		if Interface.Name == SorinUI.Name and Interface ~= SorinUI then
+		if Interface.Name == AurexisUI.Name and Interface ~= AurexisUI then
 			Hide(Interface.SmartWindow)
 			Interface.Enabled = false
-			Interface.Name = "Sorin-Old"
+			Interface.Name = "Aurexis-Old"
 		end
 	end
 elseif not isStudio then
 	for _, Interface in ipairs(CoreGui:GetChildren()) do
-		if Interface.Name == SorinUI.Name and Interface ~= SorinUI then
+		if Interface.Name == AurexisUI.Name and Interface ~= AurexisUI then
 			Hide(Interface.SmartWindow)
 			Interface.Enabled = false
-			Interface.Name = "Sorin-Old"
+			Interface.Name = "Aurexis-Old"
 		end
 	end
 end
 
-SorinUI.Enabled = false
-SorinUI.SmartWindow.Visible = false
-SorinUI.Notifications.Template.Visible = false
-SorinUI.DisplayOrder = 1000000000
+AurexisUI.Enabled = false
+AurexisUI.SmartWindow.Visible = false
+AurexisUI.Notifications.Template.Visible = false
+AurexisUI.DisplayOrder = 1000000000
 
-local Main : Frame = SorinUI.SmartWindow
+local Main : Frame = AurexisUI.SmartWindow
 local Dragger = Main.Drag
-local dragBar = SorinUI.Drag
+local dragBar = AurexisUI.Drag
 local dragInteract = dragBar and dragBar.Interact or nil
 local dragBarCosmetic = dragBar and dragBar.Drag or nil
 local Elements = Main.Elements.Interactions
 local LoadingFrame = Main.LoadingFrame
 local Navigation = Main.Navigation
 local Tabs = Navigation.Tabs
-local Notifications = SorinUI.Notifications
+local Notifications = AurexisUI.Notifications
 local KeySystem : Frame = Main.KeySystem
 
 -- local function LoadConfiguration(Configuration, autoload)
@@ -479,7 +479,7 @@ local KeySystem : Frame = Main.KeySystem
 -- 	local notified = false
 
 -- 	-- Iterate through current UI elements' flags
--- 	for FlagName, Flag in pairs(Sorin.Flags) do
+-- 	for FlagName, Flag in pairs(Aurexis.Flags) do
 -- 		local FlagValue = Data[FlagName]
 
 -- 		if FlagValue then
@@ -496,20 +496,20 @@ local KeySystem : Frame = Main.KeySystem
 -- 			end)
 -- 		else
 -- 			notified = true
--- 			Sorin:Notification({Title = "Config Error", Content = "Sorin was unable to load or find '"..FlagName.. "'' in the current script. Check ".. website .." for help.", Icon = "flag"})
+-- 			Aurexis:Notification({Title = "Config Error", Content = "Aurexis was unable to load or find '"..FlagName.. "'' in the current script. Check ".. website .." for help.", Icon = "flag"})
 -- 		end
 -- 	end
 -- 	if autoload and notified == false then
--- 		Sorin:Notification({
+-- 		Aurexis:Notification({
 -- 			Title = "Config Autoloaded",
--- 			Content = "The Configuration Has Been Automatically Loaded. Thank You For Using Sorin Library",
+-- 			Content = "The Configuration Has Been Automatically Loaded. Thank You For Using Aurexis Library",
 -- 			Icon = "file-code-2",
 -- 			ImageSource = "Lucide"
 -- 		})
 -- 	elseif notified == false then
--- 		Sorin:Notification({
+-- 		Aurexis:Notification({
 -- 			Title = "Config Loaded",
--- 			Content = "The Configuration Has Been Loaded. Thank You For Using Sorin Library",
+-- 			Content = "The Configuration Has Been Loaded. Thank You For Using Aurexis Library",
 -- 			Icon = "file-code-2",
 -- 			ImageSource = "Lucide"
 -- 		})
@@ -520,7 +520,7 @@ local KeySystem : Frame = Main.KeySystem
 
 -- local function SaveConfiguration(Configuration, ConfigFolder, hasRoot)
 -- 	local Data = {}
--- 	for i,v in pairs(Sorin.Flags) do
+-- 	for i,v in pairs(Aurexis.Flags) do
 -- 		if v.Type == "ColorPicker" then
 -- 			Data[i] = PackColor(v.Color)
 -- 		else
@@ -625,7 +625,7 @@ local function Draggable(Bar, Window, enableTaptic, tapticOffset)
 	end)
 end
 
-function Sorin:Notification(data) -- action e.g open messages
+function Aurexis:Notification(data) -- action e.g open messages
 	task.spawn(function()
 		data = Kwargify({
 			Title = "Missing Title",
@@ -765,15 +765,15 @@ local function Minimize(Window)
 end
 
 
-function Sorin:CreateWindow(WindowSettings)
+function Aurexis:CreateWindow(WindowSettings)
 
 	WindowSettings = Kwargify({
-		Name = "SorinHub UI",
+		Name = "AurexisHub UI",
 		Subtitle = "Credits NebulaSoftworks",
 		LogoID = "77656423525793",
 		LoadingEnabled = true,
-		LoadingTitle = "SorinServices Scripthub",
-		LoadingSubtitle = "by SorinServices",
+		LoadingTitle = "Aurexis Interface Libary",
+		LoadingSubtitle = "by SorinSoftware Services",
 
 		ConfigSettings = {},
 
@@ -783,7 +783,7 @@ function Sorin:CreateWindow(WindowSettings)
 
 	WindowSettings.ConfigSettings = Kwargify({
 		RootFolder = nil,
-		ConfigFolder = "SorinServiceConfig"
+		ConfigFolder = "AurexisServiceConfig"
 	}, WindowSettings.ConfigSettings or {})
 
 	WindowSettings.KeySettings = Kwargify({
@@ -824,7 +824,7 @@ function Sorin:CreateWindow(WindowSettings)
 
 	LoadingFrame.Frame.Frame.Title.Text = WindowSettings.LoadingTitle
 	LoadingFrame.Frame.Frame.Subtitle.Text = WindowSettings.LoadingSubtitle
-	LoadingFrame.Version.Text = LoadingFrame.Frame.Frame.Title.Text == "Sorin Interface Suite" and Release or "SorinService UI"
+	LoadingFrame.Version.Text = LoadingFrame.Frame.Frame.Title.Text == "Aurexis Interface Libary" and Release or "AurexisService UI"
 
 	Navigation.Player.icon.ImageLabel.Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
 	Navigation.Player.Namez.Text = Players.LocalPlayer.DisplayName
@@ -863,7 +863,7 @@ function Sorin:CreateWindow(WindowSettings)
 	-- 	LoadAutoLoad(WindowSettings.ConfigSettings.ConfigFolder, WindowSettings.ConfigSettings.RootFolder)
 	-- end)
 
-	SorinUI.Enabled = true
+	AurexisUI.Enabled = true
 
 	BlurModule(Main)
 
@@ -871,7 +871,7 @@ function Sorin:CreateWindow(WindowSettings)
 		local KeySettings = WindowSettings.KeySettings
 		
 		Draggable(Dragger, Main)
-		Draggable(SorinUI.MobileSupport, SorinUI.MobileSupport)
+		Draggable(AurexisUI.MobileSupport, AurexisUI.MobileSupport)
 		if dragBar then Draggable(dragInteract, Main, true, 255) end
 
 		if not WindowSettings.KeySettings then
@@ -883,11 +883,11 @@ function Sorin:CreateWindow(WindowSettings)
 
 		if typeof(WindowSettings.KeySettings.Key) == "string" then WindowSettings.KeySettings.Key = {WindowSettings.KeySettings.Key} end
 
-		local direc = WindowSettings.KeySettings.SaveInRoot and "Sorin/Configurations/" .. WindowSettings.ConfigSettings.RootFolder .. "/" .. WindowSettings.ConfigSettings.ConfigFolder .. "/Key System/" or "Sorin/Configurations/" ..  WindowSettings.ConfigSettings.ConfigFolder .. "/Key System/"
+		local direc = WindowSettings.KeySettings.SaveInRoot and "Aurexis/Configurations/" .. WindowSettings.ConfigSettings.RootFolder .. "/" .. WindowSettings.ConfigSettings.ConfigFolder .. "/Key System/" or "Aurexis/Configurations/" ..  WindowSettings.ConfigSettings.ConfigFolder .. "/Key System/"
 
-		if isfile and isfile(direc .. WindowSettings.KeySettings.FileName .. ".sorin") then
+		if isfile and isfile(direc .. WindowSettings.KeySettings.FileName .. ".aurexis") then
 			for i, Key in ipairs(WindowSettings.KeySettings.Key) do
-				if string.find(readfile(direc .. WindowSettings.KeySettings.FileName .. ".sorin"), Key) then
+				if string.find(readfile(direc .. WindowSettings.KeySettings.FileName .. ".Aurexis"), Key) then
 					Passthrough = true
 					break
 				end
@@ -971,9 +971,9 @@ function Sorin:CreateWindow(WindowSettings)
 					KeySystem.Visible = false
 					if WindowSettings.KeySettings.SaveKey then
 						if writefile then
-							writefile(direc .. WindowSettings.KeySettings.FileName .. ".sorin", FoundKey)
+							writefile(direc .. WindowSettings.KeySettings.FileName .. ".Aurexis", FoundKey)
 						end
-						Sorin:Notification({Title = "Key System", Content = "The key for this script has been saved successfully.", Icon = "lock_open"})
+						Aurexis:Notification({Title = "Key System", Content = "The key for this script has been saved successfully.", Icon = "lock_open"})
 					end
 				else
 					if AttemptsRemaining == 0 then
@@ -990,7 +990,7 @@ function Sorin:CreateWindow(WindowSettings)
 
 			KeySystem.Close.MouseButton1Click:Connect(function()
 				
-				Sorin:Destroy()
+				Aurexis:Destroy()
 			end)
 		end
 	end
@@ -1032,7 +1032,7 @@ function Sorin:CreateWindow(WindowSettings)
 	LoadingFrame.Visible = false
 
 	Draggable(Dragger, Main)
-	Draggable(SorinUI.MobileSupport, SorinUI.MobileSupport)
+	Draggable(AurexisUI.MobileSupport, AurexisUI.MobileSupport)
 	if dragBar then Draggable(dragInteract, Main, true, 255) end
 
 	Elements.Template.LayoutOrder = 1000000000
@@ -1101,7 +1101,7 @@ function Window:CreateHomeTab(HomeTabSettings)
 	HomeTabPage.detailsholder.dashboard.Client.Title.Text =  exec .. " User"
 
 	if isStudio then
-		HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Sorin Interface Suite - Debugging Mode"
+		HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Aurexis Interface Libary - Debugging Mode"
 		HomeTabPage.detailsholder.dashboard.Client.Subtitle.TextColor3 = Color3.fromRGB(200, 200, 200)
 	else
 		local color, message
@@ -1394,7 +1394,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Button.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Button.Title.Text = ButtonSettings.Name
 						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1658,7 +1658,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 									TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 									Slider.Title.Text = "Callback Error"
-									print("Sorin Interface Suite | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+									print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 									wait(0.5)
 									Slider.Title.Text = SliderSettings.Name
 									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1668,7 +1668,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 								SliderSettings.CurrentValue = NewValue
 								SliderV.CurrentValue = SliderSettings.CurrentValue
-								-- Sorin.Flags[SliderSettings.Flag] = SliderSettings
+								-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
 							end
 						else
 							TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In, 0, false), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
@@ -1691,7 +1691,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Slider.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Slider.Title.Text = SliderSettings.Name
 						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1701,7 +1701,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 					SliderSettings.CurrentValue = NewVal
 					SliderV.CurrentValue = SliderSettings.CurrentValue
-					-- Sorin.Flags[SliderSettings.Flag] = SliderSettings
+					-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
 
 				end
 
@@ -1736,7 +1736,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 					Set()
 
-					-- Sorin.Flags[SliderSettings.Flag] = SliderSettings
+					-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
 				end
 
 				function SliderV:Destroy()
@@ -1745,12 +1745,12 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end
 
 				if Flag then
-					Sorin.Options[Flag] = SliderV
+					Aurexis.Options[Flag] = SliderV
 				end
 
-				SorinUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
-					Slider.Main.color.Color = Sorin.ThemeGradient
-					Slider.Main.UIStroke.color.Color = Sorin.ThemeGradient
+				AurexisUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
+					Slider.Main.color.Color = Aurexis.ThemeGradient
+					Slider.Main.UIStroke.color.Color = Aurexis.ThemeGradient
 				end)
 
 				return SliderV
@@ -1836,7 +1836,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Toggle.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Toggle.Title.Text = ToggleSettings.Name
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1863,7 +1863,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Toggle.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Toggle.Title.Text = ToggleSettings.Name
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1907,7 +1907,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 						Toggle.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Toggle.Title.Text = ToggleSettings.Name
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1921,13 +1921,13 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					Toggle:Destroy()
 				end
 
-				SorinUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
-					Toggle.toggle.color.Color = Sorin.ThemeGradient
-					Toggle.toggle.UIStroke.color.Color = Sorin.ThemeGradient
+				AurexisUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
+					Toggle.toggle.color.Color = Aurexis.ThemeGradient
+					Toggle.toggle.UIStroke.color.Color = Aurexis.ThemeGradient
 				end)
 
 				if Flag then
-					Sorin.Options[Flag] = ToggleV
+					Aurexis.Options[Flag] = ToggleV
 				end
 
 				return ToggleV
@@ -2029,7 +2029,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Bind.Title.Text = "Callback Error"
-								print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Bind.Title.Text = BindSettings.Name
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2058,7 +2058,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Bind.Title.Text = "Callback Error"
-								print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Bind.Title.Text = BindSettings.Name
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2078,7 +2078,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 											Bind.Title.Text = "Callback Error"
-											print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+											print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 											wait(0.5)
 											Bind.Title.Text = BindSettings.Name
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2095,7 +2095,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 											Bind.Title.Text = "Callback Error"
-											print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+											print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 											wait(0.5)
 											Bind.Title.Text = BindSettings.Name
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2145,10 +2145,10 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end
 
 				if Flag then
-					Sorin.Options[Flag] = BindV
+					Aurexis.Options[Flag] = BindV
 				end
 
-				-- Sorin.Flags[BindSettings.Flag] = BindSettings
+				-- Aurexis.Flags[BindSettings.Flag] = BindSettings
 
 				return BindV
 
@@ -2225,7 +2225,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Input.Title.Text = "Callback Error"
-								print("Sorin Interface Suite | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Input.Title.Text = InputSettings.Name
 								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2266,7 +2266,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Input.Title.Text = "Callback Error"
-							print("Sorin Interface Suite | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Input.Title.Text = InputSettings.Name
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2313,7 +2313,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end
 
 				if Flag then
-					Sorin.Options[Flag] = InputV
+					Aurexis.Options[Flag] = InputV
 				end
 
 
@@ -2386,7 +2386,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Dropdown.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Dropdown.Title.Text = DropdownSettings.Name
 						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2655,7 +2655,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					end
 					Dropdown.Selected.Text = ""
 
-					-- Sorin.Flags[DropdownSettings.Flag] = DropdownSettings
+					-- Aurexis.Flags[DropdownSettings.Flag] = DropdownSettings
 
 				end
 
@@ -2665,10 +2665,10 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end
 
 				if Flag then
-					Sorin.Options[Flag] = DropdownV
+					Aurexis.Options[Flag] = DropdownV
 				end
 
-				-- Sorin.Flags[DropdownSettings.Flag] = DropdownSettings
+				-- Aurexis.Flags[DropdownSettings.Flag] = DropdownSettings
 
 				return DropdownV
 
@@ -2727,7 +2727,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						ColorPicker.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						ColorPicker.Title.Text = ColorPickerSettings.Name
 						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2914,7 +2914,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end
 
 				if Flag then
-					Sorin.Options[Flag] = ColorPickerV
+					Aurexis.Options[Flag] = ColorPickerV
 				end
 
 				SafeCallback(ColorPickerSettings.Color)
@@ -2986,7 +2986,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Button.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Button.Title.Text = ButtonSettings.Name
 					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3247,7 +3247,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Slider.Title.Text = "Callback Error"
-								print("Sorin Interface Suite | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Slider.Title.Text = SliderSettings.Name
 								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3257,7 +3257,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 							SliderSettings.CurrentValue = NewValue
 							SliderV.CurrentValue = SliderSettings.CurrentValue
-							-- Sorin.Flags[SliderSettings.Flag] = SliderSettings
+							-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
 						end
 					else
 						TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In, 0, false), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
@@ -3280,7 +3280,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Slider.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Slider.Title.Text = SliderSettings.Name
 					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3290,7 +3290,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 				SliderSettings.CurrentValue = NewVal
 				SliderV.CurrentValue = SliderSettings.CurrentValue
-				-- Sorin.Flags[SliderSettings.Flag] = SliderSettings
+				-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
 
 			end
 
@@ -3325,7 +3325,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 				Set()
 
-				-- Sorin.Flags[SliderSettings.Flag] = SliderSettings
+				-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
 			end
 
 			function SliderV:Destroy()
@@ -3334,12 +3334,12 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			end
 
 			if Flag then
-				Sorin.Options[Flag] = SliderV
+				Aurexis.Options[Flag] = SliderV
 			end
 
-			SorinUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
-				Slider.Main.color.Color = Sorin.ThemeGradient
-				Slider.Main.UIStroke.color.Color = Sorin.ThemeGradient
+			AurexisUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
+				Slider.Main.color.Color = Aurexis.ThemeGradient
+				Slider.Main.UIStroke.color.Color = Aurexis.ThemeGradient
 			end)
 
 			return SliderV
@@ -3424,7 +3424,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Toggle.Title.Text = ToggleSettings.Name
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3451,7 +3451,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Toggle.Title.Text = ToggleSettings.Name
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3495,7 +3495,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Toggle.Title.Text = ToggleSettings.Name
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3509,13 +3509,13 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Toggle:Destroy()
 			end
 
-			SorinUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
-				Toggle.toggle.color.Color = Sorin.ThemeGradient
-				Toggle.toggle.UIStroke.color.Color = Sorin.ThemeGradient
+			AurexisUI.ThemeRemote:GetPropertyChangedSignal("Value"):Connect(function()
+				Toggle.toggle.color.Color = Aurexis.ThemeGradient
+				Toggle.toggle.UIStroke.color.Color = Aurexis.ThemeGradient
 			end)
 
 			if Flag then
-				Sorin.Options[Flag] = ToggleV
+				Aurexis.Options[Flag] = ToggleV
 			end
 
 			return ToggleV
@@ -3616,7 +3616,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Bind.Title.Text = "Callback Error"
-							print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Bind.Title.Text = BindSettings.Name
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3645,7 +3645,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Bind.Title.Text = "Callback Error"
-							print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Bind.Title.Text = BindSettings.Name
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3665,7 +3665,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3682,7 +3682,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3732,10 +3732,10 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			end
 
 			if Flag then
-				Sorin.Options[Flag] = BindV
+				Aurexis.Options[Flag] = BindV
 			end
 
-			-- Sorin.Flags[BindSettings.Flag] = BindSettings
+			-- Aurexis.Flags[BindSettings.Flag] = BindSettings
 
 			return BindV
 
@@ -3843,7 +3843,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Bind.Title.Text = "Callback Error"
-							print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Bind.Title.Text = BindSettings.Name
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3863,7 +3863,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3880,7 +3880,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Sorin Interface Suite | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3920,7 +3920,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Bind.BindFrame.BindBox.Text = BindSettings.CurrentBind
 				Bind.BindFrame.BindBox.Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 42)
 
-				-- Sorin.Flags[BindSettings.Flag] = BindSettings
+				-- Aurexis.Flags[BindSettings.Flag] = BindSettings
 
 			end
 
@@ -3929,7 +3929,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Bind:Destroy()
 			end
 
-			-- Sorin.Flags[BindSettings.Flag] = BindSettings
+			-- Aurexis.Flags[BindSettings.Flag] = BindSettings
 
 			return BindV
 
@@ -4005,7 +4005,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Input.Title.Text = "Callback Error"
-							print("Sorin Interface Suite | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Input.Title.Text = InputSettings.Name
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4046,7 +4046,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Input.Title.Text = "Callback Error"
-						print("Sorin Interface Suite | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Input.Title.Text = InputSettings.Name
 						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4093,7 +4093,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			end
 
 			if Flag then
-				Sorin.Options[Flag] = InputV
+				Aurexis.Options[Flag] = InputV
 			end
 
 
@@ -4165,7 +4165,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Dropdown.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Dropdown.Title.Text = DropdownSettings.Name
 					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4434,7 +4434,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end
 				Dropdown.Selected.Text = ""
 
-				-- Sorin.Flags[DropdownSettings.Flag] = DropdownSettings
+				-- Aurexis.Flags[DropdownSettings.Flag] = DropdownSettings
 
 			end
 
@@ -4444,10 +4444,10 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			end
 
 			if Flag then
-				Sorin.Options[Flag] = DropdownV
+				Aurexis.Options[Flag] = DropdownV
 			end
 
-			-- Sorin.Flags[DropdownSettings.Flag] = DropdownSettings
+			-- Aurexis.Flags[DropdownSettings.Flag] = DropdownSettings
 
 			return DropdownV
 
@@ -4505,7 +4505,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					ColorPicker.Title.Text = "Callback Error"
-					print("Sorin Interface Suite | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Libary | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					ColorPicker.Title.Text = ColorPickerSettings.Name
 					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4692,7 +4692,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			end
 
 			if Flag then
-				Sorin.Options[Flag] = ColorPickerV
+				Aurexis.Options[Flag] = ColorPickerV
 			end
 
 			SafeCallback(ColorPickerSettings.Color)
@@ -4739,7 +4739,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Description = "Create a config with all of your current settings.",
 				Callback = function()
 					if not inputPath or string.gsub(inputPath, " ", "") == "" then
-						Sorin:Notification({
+						Aurexis:Notification({
 							Title = "Interface",
 							Icon = "warning",
 							ImageSource = "Material",
@@ -4748,9 +4748,9 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						return
 					end
 
-					local success, returned = Sorin:SaveConfig(inputPath)
+					local success, returned = Aurexis:SaveConfig(inputPath)
 					if not success then
-						Sorin:Notification({
+						Aurexis:Notification({
 							Title = "Interface",
 							Icon = "error",
 							ImageSource = "Material",
@@ -4758,14 +4758,14 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						})
 					end
 
-					Sorin:Notification({
+					Aurexis:Notification({
 						Title = "Interface",
 						Icon = "info",
 						ImageSource = "Material",
 						Content = string.format("Created config %q", inputPath),
 					})
 
-					configSelection:Set({ Options = Sorin:RefreshConfigList() })
+					configSelection:Set({ Options = Aurexis:RefreshConfigList() })
 				end
 			})
 
@@ -4775,7 +4775,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			configSelection = Tab:CreateDropdown({
 				Name = "Select Config",
 				Description = "Select a config to load your settings on.",
-				Options = Sorin:RefreshConfigList(),
+				Options = Aurexis:RefreshConfigList(),
 				CurrentOption = {},
 				MultipleOptions = false,
 				SpecialType = nil,
@@ -4788,9 +4788,9 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Name = "Load Config",
 				Description = "Load your saved config settings.",
 				Callback = function()
-					local success, returned = Sorin:LoadConfig(selectedConfig)
+					local success, returned = Aurexis:LoadConfig(selectedConfig)
 					if not success then
-						Sorin:Notification({
+						Aurexis:Notification({
 							Title = "Interface",
 							Icon = "error",
 							ImageSource = "Material",
@@ -4799,7 +4799,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						return
 					end
 
-					Sorin:Notification({
+					Aurexis:Notification({
 						Title = "Interface",
 						Icon = "info",
 						ImageSource = "Material",
@@ -4812,9 +4812,9 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Name = "Overwrite Config",
 				Description = "Overwrite your current config settings.",
 				Callback = function()
-					local success, returned = Sorin:SaveConfig(selectedConfig)
+					local success, returned = Aurexis:SaveConfig(selectedConfig)
 					if not success then
-						Sorin:Notification({
+						Aurexis:Notification({
 							Title = "Interface",
 							Icon = "error",
 							ImageSource = "Material",
@@ -4823,7 +4823,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						return
 					end
 
-					Sorin:Notification({
+					Aurexis:Notification({
 						Title = "Interface",
 						Icon = "info",
 						ImageSource = "Material",
@@ -4836,7 +4836,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Name = "Refresh Config List",
 				Description = "Refresh the current config list.",
 				Callback = function()
-					configSelection:Set({ Options = Sorin:RefreshConfigList() })
+					configSelection:Set({ Options = Aurexis:RefreshConfigList() })
 				end,
 			})
 
@@ -4846,10 +4846,10 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Description = "Set a config to auto load setting in your next session.",
 				Callback = function()
 					local name = selectedConfig
-					writefile(Sorin.Folder .. "/settings/autoload.txt", name)
+					writefile(Aurexis.Folder .. "/settings/autoload.txt", name)
 					loadlabel:Set({ Text = "Current autoload config: " .. name })
 
-					Sorin:Notification({
+					Aurexis:Notification({
 						Title = "Interface",
 						Icon = "info",
 						ImageSource = "Material",
@@ -4868,10 +4868,10 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				Description = "Delete The Autoload File",
 				Callback = function()
 					local name = selectedConfig
-					delfile(Sorin.Folder .. "/settings/autoload.txt")
+					delfile(Aurexis.Folder .. "/settings/autoload.txt")
 					loadlabel:Set({ Text = "None" })
 
-					Sorin:Notification({
+					Aurexis:Notification({
 						Title = "Interface",
 						Icon = "info",
 						ImageSource = "Material",
@@ -4880,8 +4880,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 				end,
 			})
 
-			if isfile(Sorin.Folder .. "/settings/autoload.txt") then
-				local name = readfile(Sorin.Folder .. "/settings/autoload.txt")
+			if isfile(Aurexis.Folder .. "/settings/autoload.txt") then
+				local name = readfile(Aurexis.Folder .. "/settings/autoload.txt")
 				loadlabel:Set( { Text = "Current autoload config: " .. name })
 			end     
 		end
@@ -4896,8 +4896,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					}
 				end,
 				Load = function(Flag, data)
-					if Sorin.Options[Flag] then
-						Sorin.Options[Flag]:Set({ CurrentValue = data.state })
+					if Aurexis.Options[Flag] then
+						Aurexis.Options[Flag]:Set({ CurrentValue = data.state })
 					end
 				end
 			},
@@ -4910,8 +4910,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					}
 				end,
 				Load = function(Flag, data)
-					if Sorin.Options[Flag] and data.value then
-						Sorin.Options[Flag]:Set({ CurrentValue = data.value })
+					if Aurexis.Options[Flag] and data.value then
+						Aurexis.Options[Flag]:Set({ CurrentValue = data.value })
 					end
 				end
 			},
@@ -4924,8 +4924,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					}
 				end,
 				Load = function(Flag, data)
-					if Sorin.Options[Flag] and data.text and type(data.text) == "string" then
-						Sorin.Options[Flag]:Set({ CurrentValue = data.text })
+					if Aurexis.Options[Flag] and data.text and type(data.text) == "string" then
+						Aurexis.Options[Flag]:Set({ CurrentValue = data.text })
 					end
 				end
 			},
@@ -4938,8 +4938,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					}
 				end,
 				Load = function(Flag, data)
-					if Sorin.Options[Flag] and data.value then
-						Sorin.Options[Flag]:Set({ CurrentOption = data.value })
+					if Aurexis.Options[Flag] and data.value then
+						Aurexis.Options[Flag]:Set({ CurrentOption = data.value })
 					end
 				end
 			},
@@ -4965,8 +4965,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						return Color3.new(r, g, b)
 					end
 
-					if Sorin.Options[Flag] and data.color then
-						Sorin.Options[Flag]:Set({Color = HexToColor3(data.color)})
+					if Aurexis.Options[Flag] and data.color then
+						Aurexis.Options[Flag]:Set({Color = HexToColor3(data.color)})
 					end
 				end
 			}
@@ -4987,25 +4987,25 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			local c1cp = Tab:CreateColorPicker({
 				Name = "Color 1",
 				Color = Color3.fromRGB(117, 164, 206),
-			}, "SorinInterfaceSuitePrebuiltCPC1") -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+			}, "AurexisInterfaceSuitePrebuiltCPC1") -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 
 			local c2cp = Tab:CreateColorPicker({
 				Name = "Color 2",
 				Color = Color3.fromRGB(123, 201, 201),
-			}, "SorinInterfaceSuitePrebuiltCPC2")
+			}, "AurexisInterfaceSuitePrebuiltCPC2")
 
 			local c3cp = Tab:CreateColorPicker({
 				Name = "Color 3",
 				Color = Color3.fromRGB(224, 138, 184),
-			}, "SorinInterfaceSuitePrebuiltCPC3") 
+			}, "AurexisInterfaceSuitePrebuiltCPC3") 
 
 			task.wait(1)
 
 			c1cp:Set({
 				Callback = function(Value)
 					if c2cp and c3cp then
-						Sorin.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Value or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.50, c2cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1.00, c3cp.Color or Color3.fromRGB(255,255,255))}
-						SorinUI.ThemeRemote.Value = not SorinUI.ThemeRemote.Value
+						Aurexis.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Value or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.50, c2cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1.00, c3cp.Color or Color3.fromRGB(255,255,255))}
+						AurexisUI.ThemeRemote.Value = not AurexisUI.ThemeRemote.Value
 					end
 				end
 			})
@@ -5013,8 +5013,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			c2cp:Set({
 				Callback = function(Value)
 					if c1cp and c3cp then
-						Sorin.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, c1cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.50, Value or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1.00, c3cp.Color or Color3.fromRGB(255,255,255))}
-						SorinUI.ThemeRemote.Value = not SorinUI.ThemeRemote.Value
+						Aurexis.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, c1cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.50, Value or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1.00, c3cp.Color or Color3.fromRGB(255,255,255))}
+						AurexisUI.ThemeRemote.Value = not AurexisUI.ThemeRemote.Value
 					end
 				end
 			})
@@ -5022,8 +5022,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			c3cp:Set({
 				Callback = function(Valuex)
 					if c2cp and c1cp then
-						Sorin.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, c1cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.50, c2cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1.00, Valuex or Color3.fromRGB(255,255,255))}
-						SorinUI.ThemeRemote.Value = not SorinUI.ThemeRemote.Value
+						Aurexis.ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, c1cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(0.50, c2cp.Color or Color3.fromRGB(255,255,255)), ColorSequenceKeypoint.new(1.00, Valuex or Color3.fromRGB(255,255,255))}
+						AurexisUI.ThemeRemote.Value = not AurexisUI.ThemeRemote.Value
 					end
 				end
 			})
@@ -5047,8 +5047,8 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 		local function BuildFolderTree()
 			if isStudio then return "Config system unavailable." end
 			local paths = {
-				Sorin.Folder,
-				Sorin.Folder .. "/settings"
+				Aurexis.Folder,
+				Aurexis.Folder .. "/settings"
 			}
 
 			for i = 1, #paths do
@@ -5064,9 +5064,9 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			if isStudio then return "Config system unavailable." end
 
 			if WindowSettings.ConfigSettings.RootFolder ~= nil and WindowSettings.ConfigSettings.RootFolder ~= "" then
-				Sorin.Folder = WindowSettings.ConfigSettings.RootFolder .. "/" .. WindowSettings.ConfigSettings.ConfigFolder
+				Aurexis.Folder = WindowSettings.ConfigSettings.RootFolder .. "/" .. WindowSettings.ConfigSettings.ConfigFolder
 			else
-				Sorin.Folder = WindowSettings.ConfigSettings.ConfigFolder
+				Aurexis.Folder = WindowSettings.ConfigSettings.ConfigFolder
 			end
 
 			BuildFolderTree()
@@ -5074,20 +5074,20 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 
 		SetFolder()
 
-		function Sorin:SaveConfig(Path)
+		function Aurexis:SaveConfig(Path)
 			if isStudio then return "Config system unavailable." end
 
 			if (not Path) then
 				return false, "Please select a config file."
 			end
 
-			local fullPath = Sorin.Folder .. "/settings/" .. Path .. ".sorin"
+			local fullPath = Aurexis.Folder .. "/settings/" .. Path .. ".aurexis"
 
 			local data = {
 				objects = {}
 			}
 
-			for flag, option in next, Sorin.Options do
+			for flag, option in next, Aurexis.Options do
 				if not ClassParser[option.Class] then continue end
 				if option.IgnoreConfig then continue end
 
@@ -5103,14 +5103,14 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			return true
 		end
 
-		function Sorin:LoadConfig(Path)
+		function Aurexis:LoadConfig(Path)
 			if isStudio then return "Config system unavailable." end
 
 			if (not Path) then
 				return false, "Please select a config file."
 			end
 
-			local file = Sorin.Folder .. "/settings/" .. Path .. ".sorin"
+			local file = Aurexis.Folder .. "/settings/" .. Path .. ".aurexis"
 			if not isfile(file) then return false, "Invalid file" end
 
 			local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(file))
@@ -5127,16 +5127,16 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			return true
 		end
 
-		function Sorin:LoadAutoloadConfig()
-			if isfile(Sorin.Folder .. "/settings/autoload.txt") then
+		function Aurexis:LoadAutoloadConfig()
+			if isfile(Aurexis.Folder .. "/settings/autoload.txt") then
 
 				if isStudio then return "Config system unavailable." end
 
-				local name = readfile(Sorin.Folder .. "/settings/autoload.txt")
+				local name = readfile(Aurexis.Folder .. "/settings/autoload.txt")
 
-				local success, err = Sorin:LoadConfig(name)
+				local success, err = Aurexis:LoadConfig(name)
 				if not success then
-					return Sorin:Notification({
+					return Aurexis:Notification({
 						Title = "Interface",
 						Icon = "sparkle",
 						ImageSource = "Material",
@@ -5144,7 +5144,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					})
 				end
 
-				Sorin:Notification({
+				Aurexis:Notification({
 					Title = "Interface",
 					Icon = "sparkle",
 					ImageSource = "Material",
@@ -5154,16 +5154,16 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 			end 
 		end
 
-		function Sorin:RefreshConfigList()
+		function Aurexis:RefreshConfigList()
 			if isStudio then return "Config system unavailable." end
 
-			local list = listfiles(Sorin.Folder .. "/settings")
+			local list = listfiles(Aurexis.Folder .. "/settings")
 
 			local out = {}
 			for i = 1, #list do
 				local file = list[i]
-				if file:sub(-5) == ".sorin" then
-					local pos = file:find(".sorin", 1, true)
+				if file:sub(-5) == ".aurexis" then
+					local pos = file:find(".aurexis", 1, true)
 					local start = pos
 
 					local char = file:sub(pos, pos)
@@ -5206,7 +5206,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 		dragBar.Visible = false
 		Window.State = false
 		if UserInputService.KeyboardEnabled == false then
-			SorinUI.MobileSupport.Visible = true
+			AurexisUI.MobileSupport.Visible = true
 		end
 	end)
 	Main.Controls.Close["MouseEnter"]:Connect(function()
@@ -5221,7 +5221,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 		if Window.State then return end
 		if input.KeyCode == Window.Bind then
 			Unhide(Main, Window.CurrentTab)
-			SorinUI.MobileSupport.Visible = false
+			AurexisUI.MobileSupport.Visible = false
 			dragBar.Visible = true
 			Window.State = true
 		end
@@ -5268,17 +5268,17 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 	end)	
 
 
-	SorinUI.MobileSupport.Interact.MouseButton1Click:Connect(function()
+	AurexisUI.MobileSupport.Interact.MouseButton1Click:Connect(function()
 		Unhide(Main, Window.CurrentTab)
 		dragBar.Visible = true
 		Window.State = true
-		SorinUI.MobileSupport.Visible = false
+		AurexisUI.MobileSupport.Visible = false
 	end)
 
 	return Window
 end
 
-function Sorin:Destroy()
+function Aurexis:Destroy()
     Main.Visible = false
     for _, Notification in ipairs(Notifications:GetChildren()) do
         if Notification.ClassName == "Frame" then
@@ -5286,8 +5286,8 @@ function Sorin:Destroy()
             Notification:Destroy()
         end
     end
-    SorinUI:Destroy()
+    AurexisUI:Destroy()
 end
 
 
-return Sorin
+return Aurexis
