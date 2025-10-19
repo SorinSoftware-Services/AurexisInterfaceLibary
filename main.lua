@@ -1048,10 +1048,15 @@ function Aurexis:CreateWindow(WindowSettings)
 	local FirstTab = true
 
 ---------------------------------------------------------------- -- HomeTab START
-
+	
+-- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
+print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
+
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
+-- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
+Window:CreateHomeTab()
 
 ---------------------------------------------------------------- -- HomeTab END
 -- Stolen From Sirius Stuff ends here
