@@ -1,4 +1,6 @@
 -- src/components/home-tab.lua
+print("[Aurexis] HomeTab module loaded successfully")
+
 return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
     function Window:CreateHomeTab(HomeTabSettings)
 
@@ -184,3 +186,4 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		end
 	end)()
 end 
+end
