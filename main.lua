@@ -1246,7 +1246,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 		TabButton.Name = TabSettings.Name
 		TabButton.TextLabel.Text = TabSettings.Name
 		TabButton.Parent = Navigation.Tabs
-		TabButton.ImageLabel.Image = GetIcon(TabSettings.Icon, TabSettings.ImageSource)
+		TabButton.ImageLabel.Image = Aurexis:GetIcon(TabSettings.Icon, TabSettings.ImageSource)
 
 		TabButton.Visible = true
 
