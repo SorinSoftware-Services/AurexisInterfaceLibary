@@ -32,12 +32,12 @@ by Nebula Softworks
 
 ]]
 
-local BASE_URL = "https://raw.githubusercontent.com/sorinservice/AurexisInterfaceLibary/main/"
+local BASE_URL = "https://raw.githubusercontent.com/sorinservice/AurexisInterfaceLibrary/main/"
 
 local Release = "Closed Beta [v 0.3]"
 
 local Aurexis = { 
-	Folder = "AurexisLibary UI", 
+	Folder = "AurexisLibrary UI", 
 	Options = {}, 
 	ThemeGradient = ColorSequence.new{ColorSequenceKeypoint.new(0.00, Color3.fromRGB(117, 164, 206)), ColorSequenceKeypoint.new(0.50, Color3.fromRGB(123, 201, 201)), ColorSequenceKeypoint.new(1.00, Color3.fromRGB(224, 138, 175))} 
 }
@@ -771,7 +771,7 @@ function Aurexis:CreateWindow(WindowSettings)
 		Subtitle = "Credits NebulaSoftworks",
 		LogoID = "77656423525793",
 		LoadingEnabled = true,
-		LoadingTitle = "Aurexis Interface Libary",
+		LoadingTitle = "Aurexis Interface Library",
 		LoadingSubtitle = "by SorinSoftware Services",
 
 		ConfigSettings = {},
@@ -823,7 +823,7 @@ function Aurexis:CreateWindow(WindowSettings)
 
 	LoadingFrame.Frame.Frame.Title.Text = WindowSettings.LoadingTitle
 	LoadingFrame.Frame.Frame.Subtitle.Text = WindowSettings.LoadingSubtitle
-	LoadingFrame.Version.Text = LoadingFrame.Frame.Frame.Title.Text == "Aurexis Interface Libary" and Release or "AurexisService UI"
+	LoadingFrame.Version.Text = LoadingFrame.Frame.Frame.Title.Text == "Aurexis Interface Library" and Release or "AurexisService UI"
 
 	Navigation.Player.icon.ImageLabel.Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size48x48)
 	Navigation.Player.Namez.Text = Players.LocalPlayer.DisplayName
@@ -1100,7 +1100,7 @@ function Window:CreateHomeTab(HomeTabSettings)
 	HomeTabPage.detailsholder.dashboard.Client.Title.Text =  exec .. " User"
 
 	if isStudio then
-		HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Aurexis Interface Libary - Debugging Mode"
+		HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = "Aurexis Interface Library - Debugging Mode"
 		HomeTabPage.detailsholder.dashboard.Client.Subtitle.TextColor3 = Color3.fromRGB(200, 200, 200)
 	else
 		local color, message
@@ -1393,7 +1393,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Button.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Button.Title.Text = ButtonSettings.Name
 						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1657,7 +1657,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 									TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 									Slider.Title.Text = "Callback Error"
-									print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+									print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 									wait(0.5)
 									Slider.Title.Text = SliderSettings.Name
 									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1690,7 +1690,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Slider.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Slider.Title.Text = SliderSettings.Name
 						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1835,7 +1835,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Toggle.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Toggle.Title.Text = ToggleSettings.Name
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1862,7 +1862,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Toggle.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Toggle.Title.Text = ToggleSettings.Name
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -1906,7 +1906,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 						Toggle.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Toggle.Title.Text = ToggleSettings.Name
 						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2028,7 +2028,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Bind.Title.Text = "Callback Error"
-								print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Bind.Title.Text = BindSettings.Name
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2057,7 +2057,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Bind.Title.Text = "Callback Error"
-								print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Bind.Title.Text = BindSettings.Name
 								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2077,7 +2077,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 											Bind.Title.Text = "Callback Error"
-											print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+											print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 											wait(0.5)
 											Bind.Title.Text = BindSettings.Name
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2094,7 +2094,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 											Bind.Title.Text = "Callback Error"
-											print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+											print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 											wait(0.5)
 											Bind.Title.Text = BindSettings.Name
 											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2224,7 +2224,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Input.Title.Text = "Callback Error"
-								print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Input.Title.Text = InputSettings.Name
 								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2265,7 +2265,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Input.Title.Text = "Callback Error"
-							print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Input.Title.Text = InputSettings.Name
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2385,7 +2385,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Dropdown.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Dropdown.Title.Text = DropdownSettings.Name
 						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2726,7 +2726,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						ColorPicker.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						ColorPicker.Title.Text = ColorPickerSettings.Name
 						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -2985,7 +2985,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Button.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Button.Title.Text = ButtonSettings.Name
 					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3246,7 +3246,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 								TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 								Slider.Title.Text = "Callback Error"
-								print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+								print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 								wait(0.5)
 								Slider.Title.Text = SliderSettings.Name
 								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3279,7 +3279,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Slider.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Slider.Title.Text = SliderSettings.Name
 					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3423,7 +3423,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Toggle.Title.Text = ToggleSettings.Name
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3450,7 +3450,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Toggle.Title.Text = ToggleSettings.Name
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3494,7 +3494,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
 					Toggle.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Toggle.Title.Text = ToggleSettings.Name
 					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3615,7 +3615,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Bind.Title.Text = "Callback Error"
-							print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Bind.Title.Text = BindSettings.Name
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3644,7 +3644,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Bind.Title.Text = "Callback Error"
-							print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Bind.Title.Text = BindSettings.Name
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3664,7 +3664,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3681,7 +3681,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3842,7 +3842,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Bind.Title.Text = "Callback Error"
-							print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Bind.Title.Text = BindSettings.Name
 							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3862,7 +3862,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -3879,7 +3879,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Libary | "..BindSettings.Name.." Callback Error " ..tostring(Response))
+										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
 										wait(0.5)
 										Bind.Title.Text = BindSettings.Name
 										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4004,7 +4004,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 							Input.Title.Text = "Callback Error"
-							print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+							print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 							wait(0.5)
 							Input.Title.Text = InputSettings.Name
 							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4045,7 +4045,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 						TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 						Input.Title.Text = "Callback Error"
-						print("Aurexis Interface Libary | "..InputSettings.Name.." Callback Error " ..tostring(Response))
+						print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
 						wait(0.5)
 						Input.Title.Text = InputSettings.Name
 						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4164,7 +4164,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					Dropdown.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					Dropdown.Title.Text = DropdownSettings.Name
 					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
@@ -4504,7 +4504,7 @@ end -- end of Window:CreateHomeTab(HomeTabSettings)
 					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
 					TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
 					ColorPicker.Title.Text = "Callback Error"
-					print("Aurexis Interface Libary | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
+					print("Aurexis Interface Library | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
 					wait(0.5)
 					ColorPicker.Title.Text = ColorPickerSettings.Name
 					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
