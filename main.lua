@@ -32,6 +32,12 @@ by Nebula Softworks
 
 ]]
 
+-- Needed function. Delete if everything is up to date with this
+GetIcon = function(...)
+	return Aurexis:GetIcon(...)
+end
+
+
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
 
 local Release = "Closed Beta [v 0.3]"
