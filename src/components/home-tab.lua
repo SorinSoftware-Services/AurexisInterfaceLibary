@@ -205,4 +205,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		end
 	end
 end)()
+
+end
 end 
