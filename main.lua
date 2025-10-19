@@ -1058,6 +1058,8 @@ HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, R
 -- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
 Window:CreateHomeTab()
 
+FirstTab = false
+
 ---------------------------------------------------------------- -- HomeTab END
 -- Stolen From Sirius Stuff ends here
 
