@@ -32,7 +32,7 @@ by Nebula Softworks
 
 ]]
 
-local BASE_URL = "https://raw.githubusercontent.com/sorinservice/AurexisInterfaceLibrary/main/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
 
 local Release = "Closed Beta [v 0.3]"
 
