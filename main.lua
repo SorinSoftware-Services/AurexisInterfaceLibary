@@ -1898,21 +1898,19 @@ end
 				Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText
 				Input.InputFrame.Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 52, 0, 30)
 
-				Input.InputFrame.InputBox.FocusLost:Connect(function(bleh)
-
-					if InputSettings.Enter then
-						if bleh then
-							local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
-					if not Success then 
-						CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-					end 
-				end
-			end
+				Input.InputFrame.InputBox.FocusLost:Connect(function(enterPressed)
+					if InputSettings.Enter and enterPressed then
+						local success, response = CallbackUtil.Safe(InputSettings.Callback, Input.InputFrame.InputBox.Text)
+						if not success then
+							CallbackUtil.FlashError(Input, InputSettings, response)
+						else
+							InputV.CurrentValue = Input.InputFrame.InputBox.Text
+						end
+					end
 
 					if InputSettings.RemoveTextAfterFocusLost then
 						Input.InputFrame.InputBox.Text = ""
 					end
-
 				end)
 
 				if InputSettings.Numeric then
@@ -1932,12 +1930,12 @@ end
 					end
 					TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 52, 0, 30)}):Play()
 					if not InputSettings.Enter then
-						local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
-				if not Success 
-					then CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-				end 
-			end
-			
+						local success, response = CallbackUtil.Safe(InputSettings.Callback, Input.InputFrame.InputBox.Text)
+						if not success then
+							CallbackUtil.FlashError(Input, InputSettings, response)
+						end
+					end
+
 					InputV.CurrentValue = Input.InputFrame.InputBox.Text				
 				end)
 
@@ -3348,98 +3346,97 @@ end
 			Bind["MouseLeave"]:Connect(function()
 				tween(Bind.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 			end)
+
 			UserInputService.InputBegan:Connect(function(input, processed)
-
 				if CheckingForKey then
-	if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= (Window and Window.Bind or Enum.KeyCode.K) then
-		local SplitMessage = string.split(tostring(input.KeyCode), ".")
-		local NewKeyNoEnum = SplitMessage[3]
-		Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
-		BindSettings.CurrentBind = tostring(NewKeyNoEnum)
-		Bind.BindFrame.BindBox:ReleaseFocus()
-	end
-elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind] and not processed) then -- Test
-	local Held = true
-	local Connection
-	Connection = input.Changed:Connect(function(prop)
-		if prop == "UserInputState" then
-			Connection:Disconnect()
-			Held = false
-		end
-	end)
-
-	if not BindSettings.HoldToInteract then
-		BindV.Active = not BindV.Active
-		local success, response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
-		if not success then
-			CallbackUtil.FlashError(Bind, BindSettings, response)
-		end
-	else
-		task.wait(0.1)
-		if Held then
-			local Loop
-			Loop = RunService.Stepped:Connect(function()
-				if not Held then
-					local success, response = CallbackUtil.Safe(BindSettings.Callback, false)
-					if not success then
-						CallbackUtil.FlashError(Bind, BindSettings, response)
+					if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= (Window and Window.Bind or Enum.KeyCode.K) then
+						local splitMessage = string.split(tostring(input.KeyCode), ".")
+						local newKeyNoEnum = splitMessage[3]
+						Bind.BindFrame.BindBox.Text = tostring(newKeyNoEnum)
+						BindSettings.CurrentBind = tostring(newKeyNoEnum)
+						Bind.BindFrame.BindBox:ReleaseFocus()
 					end
-					Loop:Disconnect()
-				else
-					local success, response = CallbackUtil.Safe(BindSettings.Callback, true)
-					if not success then
-						CallbackUtil.FlashError(Bind, BindSettings, response)
+				elseif BindSettings.CurrentBind ~= nil
+					and input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind]
+					and not processed then
+
+					local held = true
+					local connection
+					connection = input.Changed:Connect(function(prop)
+						if prop == "UserInputState" then
+							connection:Disconnect()
+							held = false
+						end
+					end)
+
+					if not BindSettings.HoldToInteract then
+						BindV.Active = not BindV.Active
+
+						local success, response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
+						if not success then
+							CallbackUtil.FlashError(Bind, BindSettings, response)
+						end
+					else
+						task.wait(0.1)
+						if held then
+							local loop
+							loop = RunService.Stepped:Connect(function()
+								if not held then
+									local success, response = CallbackUtil.Safe(BindSettings.Callback, false)
+									if not success then
+										CallbackUtil.FlashError(Bind, BindSettings, response)
+									end
+									loop:Disconnect()
+								else
+									local success, response = CallbackUtil.Safe(BindSettings.Callback, true)
+									if not success then
+										CallbackUtil.FlashError(Bind, BindSettings, response)
+									end
+								end
+							end)
+						end
 					end
 				end
 			end)
-		end
-	end
-end)
 
 			-- Resize bind capsule based on text width
-	Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
-		TweenService:Create(
-			Bind.BindFrame,
-			TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
-			{Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 30)}
-		):Play()
-	end)
+			Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
+				TweenService:Create(
+					Bind.BindFrame,
+					TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+					{Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 30)}
+				):Play()
+			end)
 
 			-- Dynamic bind configuration
-	function BindV:Set(NewBindSettings)
-	NewBindSettings = Kwargify({
-		Name = BindSettings.Name,
-		Description = BindSettings.Description,
-		CurrentBind = BindSettings.CurrentBind,
-		HoldToInteract = BindSettings.HoldToInteract,
-		Callback = BindSettings.Callback
-	}, NewBindSettings or {})
+			function BindV:Set(NewBindSettings)
+				NewBindSettings = Kwargify({
+					Name = BindSettings.Name,
+					Description = BindSettings.Description,
+					CurrentBind = BindSettings.CurrentBind,
+					HoldToInteract = BindSettings.HoldToInteract,
+					Callback = BindSettings.Callback
+				}, NewBindSettings or {})
 
-	BindV.Settings = NewBindSettings
-	BindSettings = NewBindSettings
+				BindV.Settings = NewBindSettings
+				BindSettings = NewBindSettings
 
-	Bind.Name = BindSettings.Name
-	Bind.Title.Text = BindSettings.Name
-	if BindSettings.Description ~= nil and BindSettings.Description ~= "" and Bind.Desc ~= nil then
-		Bind.Desc.Text = BindSettings.Description
-	end
+				Bind.Name = BindSettings.Name
+				Bind.Title.Text = BindSettings.Name
+				if BindSettings.Description ~= nil and BindSettings.Description ~= "" and Bind.Desc ~= nil then
+					Bind.Desc.Text = BindSettings.Description
+				end
 
-	Bind.BindFrame.BindBox.Text = BindSettings.CurrentBind
-	Bind.BindFrame.BindBox.Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 42)
-
-	-- Aurexis.Flags[BindSettings.Flag] = BindSettings
-end
-
+				Bind.BindFrame.BindBox.Text = BindSettings.CurrentBind
+				Bind.BindFrame.BindBox.Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 42)
+			end
 
 			function BindV:Destroy()
 				Bind.Visible = false
 				Bind:Destroy()
 			end
 
-			-- Aurexis.Flags[BindSettings.Flag] = BindSettings
-
 			return BindV
-
 		end
 
 		-- Dynamic Input
@@ -3499,33 +3496,19 @@ end
 			Input.InputFrame.InputBox.PlaceholderText = InputSettings.PlaceholderText
 			Input.InputFrame.Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 52, 0, 30)
 
-			Input.InputFrame.InputBox.FocusLost:Connect(function(bleh)
-
-				if InputSettings.Enter then
-					if bleh then
-						local Success, Response = pcall(function()
-							InputSettings.Callback(Input.InputFrame.InputBox.Text)
-							InputV.CurrentValue = Input.InputFrame.InputBox.Text
-						end)
-						if not Success then
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-							Input.Title.Text = "Callback Error"
-							print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
-							wait(0.5)
-							Input.Title.Text = InputSettings.Name
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-						end
+			Input.InputFrame.InputBox.FocusLost:Connect(function(enterPressed)
+				if InputSettings.Enter and enterPressed then
+					local success, response = CallbackUtil.Safe(InputSettings.Callback, Input.InputFrame.InputBox.Text)
+					if not success then
+						CallbackUtil.FlashError(Input, InputSettings, response)
+					else
+						InputV.CurrentValue = Input.InputFrame.InputBox.Text
 					end
 				end
 
 				if InputSettings.RemoveTextAfterFocusLost then
 					Input.InputFrame.InputBox.Text = ""
 				end
-
 			end)
 
 			if InputSettings.Numeric then
@@ -3545,20 +3528,9 @@ end
 				end
 				TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 52, 0, 30)}):Play()
 				if not InputSettings.Enter then
-					local Success, Response = pcall(function()
-						InputSettings.Callback(Input.InputFrame.InputBox.Text)
-					end)
-					if not Success then
-						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Input.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Input.Title.Text = InputSettings.Name
-						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
+					local success, response = CallbackUtil.Safe(InputSettings.Callback, Input.InputFrame.InputBox.Text)
+					if not success then
+						CallbackUtil.FlashError(Input, InputSettings, response)
 					end
 				end
 				InputV.CurrentValue = Input.InputFrame.InputBox.Text				
