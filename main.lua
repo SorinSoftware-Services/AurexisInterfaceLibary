@@ -32,15 +32,10 @@ by Nebula Softworks
 
 ]]
 
--- Needed function. Delete if everything is up to date with this
-GetIcon = function(...)
-	return Aurexis:GetIcon(...)
-end
-
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
-
-local Release = "Closed Beta [v 0.3]"
+local CallbackUtil = requireRemote("src/utils/callback.lua")
+local Release = "Closed Beta [v 0.1]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
@@ -1587,22 +1582,11 @@ FirstTab = false
 					ToggleSettings.CurrentValue = not ToggleSettings.CurrentValue
 					Set(ToggleSettings.CurrentValue)
 
-					local Success, Response = pcall(function()
-						ToggleSettings.Callback(ToggleSettings.CurrentValue)
-					end)
-					if not Success then
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Toggle.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Toggle.Title.Text = ToggleSettings.Name
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					end
-				end)
+						local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+	if not Success then
+		CallbackUtil.FlashError(Toggle, ToggleSettings, Response)
+	end
+end)
 
 				Toggle["MouseEnter"]:Connect(function()
 					tween(Toggle.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
