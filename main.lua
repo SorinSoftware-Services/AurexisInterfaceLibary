@@ -1735,70 +1735,61 @@ end
 				Bind["MouseLeave"]:Connect(function()
 					tween(Bind.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 				end)
-				UserInputService.InputBegan:Connect(function(input, processed)
 
+				UserInputService.InputBegan:Connect(function(input, processed)
 					if CheckingForKey then
 						if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Window.Bind then
-							local SplitMessage = string.split(tostring(input.KeyCode), ".")
-							local NewKeyNoEnum = SplitMessage[3]
-							
-							Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
-							BindSettings.CurrentBind = tostring(NewKeyNoEnum)
-							
-                            local Success, Response = CallbackUtil.Safe(BindSettings.Callback, BindSettings.CurrentBind)  
-							if not Success then  
-								CallbackUtil.FlashError(Bind, BindSettings, Response) 
-							end 
-							
-							Bind.BindFrame.BindBox:ReleaseFocus() 
-						end 
-					end
-							
-					elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind] and not processed) then -- Test
-						local Held = true
-						local Connection
-						Connection = input.Changed:Connect(function(prop)
+							local splitMessage = string.split(tostring(input.KeyCode), ".")
+							local newKeyNoEnum = splitMessage[3]
+
+							Bind.BindFrame.BindBox.Text = tostring(newKeyNoEnum)
+							BindSettings.CurrentBind = tostring(newKeyNoEnum)
+
+							local success, response = CallbackUtil.Safe(BindSettings.Callback, BindSettings.CurrentBind)
+							if not success then
+								CallbackUtil.FlashError(Bind, BindSettings, response)
+							end
+
+							Bind.BindFrame.BindBox:ReleaseFocus()
+						end
+					elseif BindSettings.CurrentBind ~= nil
+						and input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind]
+						and not processed then
+
+						local held = true
+						local connection
+						connection = input.Changed:Connect(function(prop)
 							if prop == "UserInputState" then
-								Connection:Disconnect()
-								Held = false
+								connection:Disconnect()
+								held = false
 							end
 						end)
 
 						if not BindSettings.HoldToInteract then
 							BindV.Active = not BindV.Active
-							local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue) 
-						if not Success then
-							CallbackUtil.FlashError(Toggle, ToggleSettings, Response)
-						end 
-					end
+
+							local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+							if not success then
+								CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+							end
 						else
-							wait(0.1)
-							if Held then
-								local Loop; Loop = RunService.Stepped:Connect(function()
-									if not Held then
-										local Success, Response = pcall(function()
-											BindSettings.Callback(false)
-										end)
-										if not Success then
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-											Bind.Title.Text = "Callback Error"
-											print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-											wait(0.5)
-											Bind.Title.Text = BindSettings.Name
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-										end 
-										Loop:Disconnect()
+							task.wait(0.1)
+							if held then
+								local loop
+								loop = RunService.Stepped:Connect(function()
+									if not held then
+										local success, response = CallbackUtil.Safe(BindSettings.Callback, false)
+										if not success then
+											CallbackUtil.FlashError(Bind, BindSettings, response)
+										end
+										loop:Disconnect()
 									else
-										local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
-									if not Success then 
-										CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-									end 
-								end
-								end)	
+										local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+										if not success then
+											CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+										end
+									end
+								end)
 							end
 						end
 					end
