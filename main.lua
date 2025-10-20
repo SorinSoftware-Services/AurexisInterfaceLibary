@@ -38,9 +38,9 @@ GetIcon = function(...)
 end
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
+local BASE_URL = "https://github.com/SorinSoftware-Services/AurexisInterfaceLibrary/edit/Unstable/New/"
 
-local Release = "Closed Beta [v 0.3]"
+local Release = "Closed Beta [v 0.1]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
