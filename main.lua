@@ -1582,11 +1582,11 @@ end
 					ToggleSettings.CurrentValue = not ToggleSettings.CurrentValue
 					Set(ToggleSettings.CurrentValue)
 
-				 	local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
-	                if not Success then
-		                CallbackUtil.FlashError(Toggle, ToggleSettings, Response)
-	                end
-                end)
+					local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+					if not success then
+						CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+					end
+				end)
 
 				Toggle["MouseEnter"]:Connect(function()
 					tween(Toggle.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
@@ -1596,13 +1596,13 @@ end
 					tween(Toggle.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 				end)
 
-                if ToggleSettings.CurrentValue 
-				then Set(ToggleSettings.CurrentValue) 
-				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue) 
-				if not Success then 
-					CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-				end 
-			end
+				if ToggleSettings.CurrentValue then
+					Set(ToggleSettings.CurrentValue)
+					local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+					if not success then
+						CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+					end
+				end
 
 				function ToggleV:UpdateState(State)
 					ToggleSettings.CurrentValue = State
@@ -1631,11 +1631,11 @@ end
 
 					ToggleV.CurrentValue = ToggleSettings.CurrentValue
 
-					local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue) 
-				if not Success then
-					CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-				end 
-			end
+					local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+					if not success then
+						CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+					end
+				end
 
 
 				function ToggleV:Destroy()
@@ -1768,9 +1768,9 @@ end
 						if not BindSettings.HoldToInteract then
 							BindV.Active = not BindV.Active
 
-							local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+							local success, response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
 							if not success then
-								CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+								CallbackUtil.FlashError(Bind, BindSettings, response)
 							end
 						else
 							task.wait(0.1)
@@ -1784,9 +1784,9 @@ end
 										end
 										loop:Disconnect()
 									else
-										local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+										local success, response = CallbackUtil.Safe(BindSettings.Callback, true)
 										if not success then
-											CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+											CallbackUtil.FlashError(Bind, BindSettings, response)
 										end
 									end
 								end)
@@ -2372,15 +2372,12 @@ end
 					tween(ColorPicker.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 				end)
 
-	            local function SafeCallback(param, c2)
-	            local Success, Response = CallbackUtil.Safe(DropdownSettings.Callback, param)
-	            if not Success then
-		                 CallbackUtil.FlashError(Dropdown, DropdownSettings, Response)
-	                  end
-	            if Success and c2 then
-		            c2()
-	            end
-             end
+				local function SafeCallback(param)
+					local success, response = CallbackUtil.Safe(ColorPickerSettings.Callback, param)
+					if not success then
+						CallbackUtil.FlashError(ColorPicker, ColorPickerSettings, response)
+					end
+				end
 
 
 				local opened = false
@@ -3031,11 +3028,11 @@ end
 				ToggleSettings.CurrentValue = not ToggleSettings.CurrentValue
 				Set(ToggleSettings.CurrentValue)
 
-				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
-	if not Success then 
-		CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-	end 
-end
+				local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+				if not success then
+					CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+				end
+			end)
 
 			Toggle["MouseEnter"]:Connect(function()
 				tween(Toggle.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
@@ -3047,11 +3044,11 @@ end
 
 			if ToggleSettings.CurrentValue then
 				Set(ToggleSettings.CurrentValue)
-				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
-	if not Success then 
-		CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-	end 
-end
+				local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+				if not success then
+					CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+				end
+			end
 
 			function ToggleV:UpdateState(State)
 				ToggleSettings.CurrentValue = State
@@ -3080,11 +3077,11 @@ end
 
 				ToggleV.CurrentValue = ToggleSettings.CurrentValue
 
-				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
-	if not Success then 
-		CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
-	end 
-end
+				local success, response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+				if not success then
+					CallbackUtil.FlashError(Toggle, ToggleSettings, response)
+				end
+			end
 
 			function ToggleV:Destroy()
 				Toggle.Visible = false
@@ -3354,7 +3351,7 @@ end
 			UserInputService.InputBegan:Connect(function(input, processed)
 
 				if CheckingForKey then
-	if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode.K then
+	if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= (Window and Window.Bind or Enum.KeyCode.K) then
 		local SplitMessage = string.split(tostring(input.KeyCode), ".")
 		local NewKeyNoEnum = SplitMessage[3]
 		Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
@@ -3373,9 +3370,9 @@ elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSe
 
 	if not BindSettings.HoldToInteract then
 		BindV.Active = not BindV.Active
-		local Success, Response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
-		if not Success then
-			CallbackUtil.FlashError(Bind, BindSettings, Response)
+		local success, response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
+		if not success then
+			CallbackUtil.FlashError(Bind, BindSettings, response)
 		end
 	else
 		task.wait(0.1)
@@ -3383,33 +3380,33 @@ elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSe
 			local Loop
 			Loop = RunService.Stepped:Connect(function()
 				if not Held then
-					local Success, Response = CallbackUtil.Safe(BindSettings.Callback, false)
-					if not Success then
-						CallbackUtil.FlashError(Bind, BindSettings, Response)
+					local success, response = CallbackUtil.Safe(BindSettings.Callback, false)
+					if not success then
+						CallbackUtil.FlashError(Bind, BindSettings, response)
 					end
 					Loop:Disconnect()
 				else
-					local Success, Response = CallbackUtil.Safe(BindSettings.Callback, true)
-					if not Success then
-						CallbackUtil.FlashError(Bind, BindSettings, Response)
+					local success, response = CallbackUtil.Safe(BindSettings.Callback, true)
+					if not success then
+						CallbackUtil.FlashError(Bind, BindSettings, response)
 					end
 				end
 			end)
 		end
 	end
-end
-
--- 🔧 Textgrößen-Anpassung (korrekt platziert)
-Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
-	TweenService:Create(
-		Bind.BindFrame,
-		TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
-		{Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 30)}
-	):Play()
 end)
 
--- ⚙️ Dynamisches Setzen der Bindeinstellungen
-function BindV:Set(NewBindSettings)
+			-- Resize bind capsule based on text width
+	Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
+		TweenService:Create(
+			Bind.BindFrame,
+			TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+			{Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 30)}
+		):Play()
+	end)
+
+			-- Dynamic bind configuration
+	function BindV:Set(NewBindSettings)
 	NewBindSettings = Kwargify({
 		Name = BindSettings.Name,
 		Description = BindSettings.Description,
@@ -3996,15 +3993,12 @@ end
 				tween(ColorPicker.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 			end)
 
-			local function SafeCallback(param, c2)
-	            local Success, Response = CallbackUtil.Safe(DropdownSettings.Callback, param) 
-							if not Success then 
-								CallbackUtil.FlashError(Dropdown, DropdownSettings, Response)
-							end 
-							if Success and c2 then
-								c2()
-							end 
-						end
+			local function SafeCallback(param)
+				local success, response = CallbackUtil.Safe(ColorPickerSettings.Callback, param)
+				if not success then
+					CallbackUtil.FlashError(ColorPicker, ColorPickerSettings, response)
+				end
+			end
 
 
 			local opened = false
@@ -4781,3 +4775,7 @@ end
 
 
 return Aurexis
+
+
+
+
