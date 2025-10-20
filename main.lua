@@ -34,6 +34,34 @@ by Nebula Softworks
 
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
+local RemoteModuleCache = {}
+
+-- Pull helper that caches GitHub-hosted modules so we only fetch once per session
+local function requireRemote(path)
+	if RemoteModuleCache[path] ~= nil then
+		return RemoteModuleCache[path]
+	end
+
+	local ok, result = pcall(function()
+		return loadstring(game:HttpGet(BASE_URL .. path))()
+	end)
+
+	if not ok and typeof(isfile) == "function" and typeof(readfile) == "function" and isfile(path) then
+		ok, result = pcall(function()
+			return loadstring(readfile(path))()
+		end)
+	end
+
+	if not ok then
+		warn(("[Aurexis] Failed to load module '%s': %s"):format(path, tostring(result)))
+		result = {}
+	end
+
+	RemoteModuleCache[path] = result
+
+	return result
+end
+
 local CallbackUtil = requireRemote("src/utils/callback.lua")
 local Release = "Closed Beta [v 0.1]"
 
@@ -60,19 +88,6 @@ if RunService:IsStudio() then
 	isStudio = true
 end
 
-
--- Universal remote require helper
-local function requireRemote(path)
-	local ok, result = pcall(function()
-		return loadstring(game:HttpGet(BASE_URL .. path))()
-	end)
-	if ok then
-		return result
-	else
-		warn("⚠️ Failed to load module: " .. path .. " → " .. tostring(result))
-		return {}
-	end
-end
 
 -- Load Icon Module
 local IconModule = requireRemote("src/icons.lua")
@@ -1140,30 +1155,22 @@ FirstTab = false
 					TweenService:Create(Button.Desc, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 				end
 
-				Button.Interact["MouseButton1Click"]:Connect(function()
-					local Success,Response = pcall(ButtonSettings.Callback)
+				Button.Interact.MouseButton1Click:Connect(function()
+            	local Success, Response = CallbackUtil.Safe(ButtonSettings.Callback)
 
-					if not Success then
-						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Button.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Button.Title.Text = ButtonSettings.Name
-						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					else
-						tween(Button.UIStroke, {Color = Color3.fromRGB(136, 131, 163)})
-						wait(0.2)
-						if ButtonV.Hover then
-							tween(Button.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
-						else
-							tween(Button.UIStroke, {Color = Color3.fromRGB(64,61,76)})
-						end
-					end
-				end)
+	            if not Success then
+		            CallbackUtil.FlashError(Button, ButtonSettings, Response)
+	            else
+		           tween(Button.UIStroke, {Color = Color3.fromRGB(136, 131, 163)})
+		           task.wait(0.2)
+		        if ButtonV.Hover then
+			       tween(Button.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
+		        else
+			       tween(Button.UIStroke, {Color = Color3.fromRGB(64, 61, 76)})
+		        end
+	        end
+        end)
+
 
 				Button["MouseEnter"]:Connect(function()
 					ButtonV.Hover = true
@@ -1404,21 +1411,11 @@ FirstTab = false
 							Slider.Value.Text = tostring(NewValue)
 
 							if SliderSettings.CurrentValue ~= NewValue then
-								local Success, Response = pcall(function()
-									SliderSettings.Callback(NewValue)
-								end)
-								if not Success then
-									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-									TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-									Slider.Title.Text = "Callback Error"
-									print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
-									wait(0.5)
-									Slider.Title.Text = SliderSettings.Name
-									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-									TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-									TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-								end
+								local Success, Response = CallbackUtil.Safe(SliderSettings.Callback, NewValue)
+                            if not Success then
+	                           CallbackUtil.FlashError(Slider, SliderSettings, Response)
+                            end
+
 
 								SliderSettings.CurrentValue = NewValue
 								SliderV.CurrentValue = SliderSettings.CurrentValue
@@ -1431,27 +1428,30 @@ FirstTab = false
 					end)
 				end)
 
-				local function Set(NewVal, bleh)
+				  local function Set(NewVal, bleh)
+	                 NewVal = NewVal or SliderSettings.CurrentValue
 
-					NewVal = NewVal or SliderSettings.CurrentValue
+                	TweenService:Create(
+		              Slider.Main.Progress,
+		              TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.InOut),
+		              {
+			             Size = UDim2.new(0, Slider.Main.AbsoluteSize.X *
+					       (((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5
+						     and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5), 1, 0
+			         )
+		         }
+	        ):Play()
 
-					TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
-					if not bleh then Slider.Value.Text = tostring(NewVal) end
-					local Success, Response = pcall(function()
-						SliderSettings.Callback(NewVal)
-					end)
-					if not Success then
-						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Slider.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Slider.Title.Text = SliderSettings.Name
-						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(30, 33, 40)}):Play()
-						TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					end
+	if not bleh then
+		Slider.Value.Text = tostring(NewVal)
+	end
+
+	local Success, Response = CallbackUtil.Safe(SliderSettings.Callback, NewVal)
+	if not Success then
+		CallbackUtil.FlashError(Slider, SliderSettings, Response)
+	end
+end
+
 
 					SliderSettings.CurrentValue = NewVal
 					SliderV.CurrentValue = SliderSettings.CurrentValue
@@ -1582,11 +1582,11 @@ FirstTab = false
 					ToggleSettings.CurrentValue = not ToggleSettings.CurrentValue
 					Set(ToggleSettings.CurrentValue)
 
-						local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
-	if not Success then
-		CallbackUtil.FlashError(Toggle, ToggleSettings, Response)
-	end
-end)
+				 	local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)
+	                if not Success then
+		                CallbackUtil.FlashError(Toggle, ToggleSettings, Response)
+	                end
+                end)
 
 				Toggle["MouseEnter"]:Connect(function()
 					tween(Toggle.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
@@ -1596,24 +1596,13 @@ end)
 					tween(Toggle.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 				end)
 
-				if ToggleSettings.CurrentValue then
-					Set(ToggleSettings.CurrentValue)
-					local Success, Response = pcall(function()
-						ToggleSettings.Callback(ToggleSettings.CurrentValue)
-					end)
-					if not Success then
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Toggle.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Toggle.Title.Text = ToggleSettings.Name
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					end
-				end
+                if ToggleSettings.CurrentValue 
+				then Set(ToggleSettings.CurrentValue) 
+				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue) 
+				if not Success then 
+					CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+				end 
+			end
 
 				function ToggleV:UpdateState(State)
 					ToggleSettings.CurrentValue = State
@@ -1642,22 +1631,12 @@ end)
 
 					ToggleV.CurrentValue = ToggleSettings.CurrentValue
 
-					local Success, Response = pcall(function()
-						ToggleSettings.Callback(ToggleSettings.CurrentValue)
-					end)
-					if not Success then
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
-						Toggle.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Toggle.Title.Text = ToggleSettings.Name
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					end
-				end
+					local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue) 
+				if not Success then
+					CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+				end 
+			end
+
 
 				function ToggleV:Destroy()
 					Toggle.Visible = false
@@ -1762,25 +1741,19 @@ end)
 						if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Window.Bind then
 							local SplitMessage = string.split(tostring(input.KeyCode), ".")
 							local NewKeyNoEnum = SplitMessage[3]
+							
 							Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
 							BindSettings.CurrentBind = tostring(NewKeyNoEnum)
-							local Success, Response = pcall(function()
-								BindSettings.Callback(BindSettings.CurrentBind)
-							end)
-							if not Success then
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-								Bind.Title.Text = "Callback Error"
-								print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-								wait(0.5)
-								Bind.Title.Text = BindSettings.Name
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-							end
-							Bind.BindFrame.BindBox:ReleaseFocus()
-						end
+							
+                            local Success, Response = CallbackUtil.Safe(BindSettings.Callback, BindSettings.CurrentBind)  
+							if not Success then  
+								CallbackUtil.FlashError(Bind, BindSettings, Response) 
+							end 
+							
+							Bind.BindFrame.BindBox:ReleaseFocus() 
+						end 
+					end
+							
 					elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind] and not processed) then -- Test
 						local Held = true
 						local Connection
@@ -1793,21 +1766,11 @@ end)
 
 						if not BindSettings.HoldToInteract then
 							BindV.Active = not BindV.Active
-							local Success, Response = pcall(function()
-								BindSettings.Callback(BindV.Active)
-							end)
-							if not Success then
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-								Bind.Title.Text = "Callback Error"
-								print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-								wait(0.5)
-								Bind.Title.Text = BindSettings.Name
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-								TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-								TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-							end
+							local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue) 
+						if not Success then
+							CallbackUtil.FlashError(Toggle, ToggleSettings, Response)
+						end 
+					end
 						else
 							wait(0.1)
 							if Held then
@@ -1830,22 +1793,11 @@ end)
 										end 
 										Loop:Disconnect()
 									else
-										local Success, Response = pcall(function()
-											BindSettings.Callback(true)
-										end)
-										if not Success then
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-											Bind.Title.Text = "Callback Error"
-											print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-											wait(0.5)
-											Bind.Title.Text = BindSettings.Name
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-											TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-											TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-										end
-									end
+										local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+									if not Success then 
+										CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+									end 
+								end
 								end)	
 							end
 						end
@@ -1959,24 +1911,12 @@ end)
 
 					if InputSettings.Enter then
 						if bleh then
-							local Success, Response = pcall(function()
-								InputSettings.Callback(Input.InputFrame.InputBox.Text)
-								InputV.CurrentValue = Input.InputFrame.InputBox.Text
-							end)
-							if not Success then
-								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-								TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-								Input.Title.Text = "Callback Error"
-								print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
-								wait(0.5)
-								Input.Title.Text = InputSettings.Name
-								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-								TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-								TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-							end
-						end
-					end
+							local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+					if not Success then 
+						CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+					end 
+				end
+			end
 
 					if InputSettings.RemoveTextAfterFocusLost then
 						Input.InputFrame.InputBox.Text = ""
@@ -2001,22 +1941,12 @@ end)
 					end
 					TweenService:Create(Input.InputFrame, TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Input.InputFrame.InputBox.TextBounds.X + 52, 0, 30)}):Play()
 					if not InputSettings.Enter then
-						local Success, Response = pcall(function()
-							InputSettings.Callback(Input.InputFrame.InputBox.Text)
-						end)
-						if not Success then
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-							Input.Title.Text = "Callback Error"
-							print("Aurexis Interface Library | "..InputSettings.Name.." Callback Error " ..tostring(Response))
-							wait(0.5)
-							Input.Title.Text = InputSettings.Name
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-							TweenService:Create(Input, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-							TweenService:Create(Input.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-						end
-					end
+						local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+				if not Success 
+					then CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+				end 
+			end
+			
 					InputV.CurrentValue = Input.InputFrame.InputBox.Text				
 				end)
 
@@ -2120,26 +2050,16 @@ end)
 					end
 				end
 
-				local function SafeCallback(param, c2)
-					local Success, Response = pcall(function()
-						DropdownSettings.Callback(param)
-					end)
-					if not Success then
-						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						Dropdown.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						Dropdown.Title.Text = DropdownSettings.Name
-						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					end
-					if Success and c2 then
-						c2()
-					end
-				end
+				local function SafeCallback(param, c2) 
+		            local Success, Response = CallbackUtil.Safe(DropdownSettings.Callback, param) 
+		            if not Success then 
+			           CallbackUtil.FlashError(Dropdown, DropdownSettings, Response) 
+		           end
+	            if Success and c2 then
+		            c2()
+	            end
+            end
+
 
 				-- fixed by justhey
 				Dropdown.Selected:GetPropertyChangedSignal("Text"):Connect(function()
@@ -2461,26 +2381,16 @@ end)
 					tween(ColorPicker.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 				end)
 
-				local function SafeCallback(param, c2)
-					local Success, Response = pcall(function()
-						ColorPickerSettings.Callback(param)
-					end)
-					if not Success then
-						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-						TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-						ColorPicker.Title.Text = "Callback Error"
-						print("Aurexis Interface Library | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
-						wait(0.5)
-						ColorPicker.Title.Text = ColorPickerSettings.Name
-						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-						TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-						TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-					end
-					if Success and c2 then
-						c2()
-					end
-				end
+	            local function SafeCallback(param, c2)
+	            local Success, Response = CallbackUtil.Safe(DropdownSettings.Callback, param)
+	            if not Success then
+		                 CallbackUtil.FlashError(Dropdown, DropdownSettings, Response)
+	                  end
+	            if Success and c2 then
+		            c2()
+	            end
+             end
+
 
 				local opened = false
 
@@ -2561,6 +2471,7 @@ end)
 					ColorPickerSettings.Color = Color3.fromRGB(r,g,b)
 					SafeCallback( Color3.fromRGB(r,g,b))
 				end)
+	
 				--RGB
 				local function rgbBoxes(box,toChange)
 					local value = tonumber(box.Text) 
@@ -2721,30 +2632,22 @@ end)
 				TweenService:Create(Button.Desc, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()	
 			end
 
-			Button.Interact["MouseButton1Click"]:Connect(function()
-				local Success,Response = pcall(ButtonSettings.Callback)
 
-				if not Success then
-					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-					Button.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..ButtonSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					Button.Title.Text = ButtonSettings.Name
-					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(Button, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-					TweenService:Create(Button.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				else
-					tween(Button.UIStroke, {Color = Color3.fromRGB(136, 131, 163)})
-					wait(0.2)
-					if ButtonV.Hover then
-						tween(Button.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
-					else
-						tween(Button.UIStroke, {Color = Color3.fromRGB(64,61,76)})
-					end
-				end
-			end)
+			Button.Interact.MouseButton1Click:Connect(function()
+	           local Success, Response = CallbackUtil.Safe(ButtonSettings.Callback)
+                if not Success then
+		              CallbackUtil.FlashError(Button, ButtonSettings, Response)
+	            else
+		              tween(Button.UIStroke, {Color = Color3.fromRGB(136, 131, 163)})
+		              task.wait(0.2)
+		           if ButtonV.Hover then
+			          tween(Button.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
+		           else
+			          tween(Button.UIStroke, {Color = Color3.fromRGB(64, 61, 76)})
+		           end
+	            end
+            end)
+
 
 			Button["MouseEnter"]:Connect(function()
 				ButtonV.Hover = true
@@ -2982,26 +2885,14 @@ end)
 						Slider.Value.Text = tostring(NewValue)
 
 						if SliderSettings.CurrentValue ~= NewValue then
-							local Success, Response = pcall(function()
-								SliderSettings.Callback(NewValue)
-							end)
-							if not Success then
-								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-								TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-								Slider.Title.Text = "Callback Error"
-								print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
-								wait(0.5)
-								Slider.Title.Text = SliderSettings.Name
-								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-								TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-								TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-							end
+                          local Success, Response = CallbackUtil.Safe(SliderSettings.Callback, NewValue)
+	                    if not Success then 
+							CallbackUtil.FlashError(Slider, SliderSettings, Response)
+	                     end
 
-							SliderSettings.CurrentValue = NewValue
-							SliderV.CurrentValue = SliderSettings.CurrentValue
-							-- Aurexis.Flags[SliderSettings.Flag] = SliderSettings
-						end
+                     	    SliderSettings.CurrentValue = NewValue
+	                        SliderV.CurrentValue = SliderSettings.CurrentValue
+                         end
 					else
 						TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.In, 0, false), {Size = UDim2.new(0, Location - Slider.Main.AbsolutePosition.X > 5 and Location - Slider.Main.AbsolutePosition.X or 5, 1, 0)}):Play()
 						Loop:Disconnect()
@@ -3015,21 +2906,11 @@ end)
 
 				TweenService:Create(Slider.Main.Progress, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {Size = UDim2.new(0, Slider.Main.AbsoluteSize.X * ((NewVal + SliderSettings.Range[1]) / (SliderSettings.Range[2] - SliderSettings.Range[1])) > 5 and Slider.Main.AbsoluteSize.X * (NewVal / (SliderSettings.Range[2] - SliderSettings.Range[1])) or 5, 1, 0)}):Play()
 				if not bleh then Slider.Value.Text = tostring(NewVal) end
-				local Success, Response = pcall(function()
-					SliderSettings.Callback(NewVal)
-				end)
-				if not Success then
-					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-					Slider.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..SliderSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					Slider.Title.Text = SliderSettings.Name
-					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(Slider, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(30, 33, 40)}):Play()
-					TweenService:Create(Slider.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				end
+				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+	          if not Success then 
+		             CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+              	end 
+            end
 
 				SliderSettings.CurrentValue = NewVal
 				SliderV.CurrentValue = SliderSettings.CurrentValue
@@ -3159,22 +3040,11 @@ end)
 				ToggleSettings.CurrentValue = not ToggleSettings.CurrentValue
 				Set(ToggleSettings.CurrentValue)
 
-				local Success, Response = pcall(function()
-					ToggleSettings.Callback(ToggleSettings.CurrentValue)
-				end)
-				if not Success then
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-					Toggle.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					Toggle.Title.Text = ToggleSettings.Name
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				end
-			end)
+				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+	if not Success then 
+		CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+	end 
+end
 
 			Toggle["MouseEnter"]:Connect(function()
 				tween(Toggle.UIStroke, {Color = Color3.fromRGB(87, 84, 104)})
@@ -3186,22 +3056,11 @@ end)
 
 			if ToggleSettings.CurrentValue then
 				Set(ToggleSettings.CurrentValue)
-				local Success, Response = pcall(function()
-					ToggleSettings.Callback(ToggleSettings.CurrentValue)
-				end)
-				if not Success then
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-					Toggle.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					Toggle.Title.Text = ToggleSettings.Name
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				end
-			end
+				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+	if not Success then 
+		CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+	end 
+end
 
 			function ToggleV:UpdateState(State)
 				ToggleSettings.CurrentValue = State
@@ -3230,22 +3089,11 @@ end)
 
 				ToggleV.CurrentValue = ToggleSettings.CurrentValue
 
-				local Success, Response = pcall(function()
-					ToggleSettings.Callback(ToggleSettings.CurrentValue)
-				end)
-				if not Success then
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0}):Play()
-					Toggle.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..ToggleSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					Toggle.Title.Text = ToggleSettings.Name
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(Toggle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-					TweenService:Create(Toggle.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				end
-			end
+				local Success, Response = CallbackUtil.Safe(ToggleSettings.Callback, ToggleSettings.CurrentValue)  
+	if not Success then 
+		CallbackUtil.FlashError(Toggle, ToggleSettings, Response) 
+	end 
+end
 
 			function ToggleV:Destroy()
 				Toggle.Visible = false
@@ -3351,21 +3199,11 @@ end)
 						local NewKeyNoEnum = SplitMessage[3]
 						Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
 						BindSettings.CurrentBind = tostring(NewKeyNoEnum)
-						local Success, Response = pcall(function()
-							BindSettings.Callback(BindSettings.CurrentBind)
-						end)
-						if not Success then
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-							Bind.Title.Text = "Callback Error"
-							print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-							wait(0.5)
-							Bind.Title.Text = BindSettings.Name
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-						end
+						local Success, Response = CallbackUtil.Safe(BindSettings.Callback, BindSettings.CurrentBind) 
+				if not Success then 
+					CallbackUtil.FlashError(Bind, BindSettings, Response) 
+				end
+
 						Bind.BindFrame.BindBox:ReleaseFocus()
 					end
 				elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind] and not processed) then -- Test
@@ -3380,64 +3218,30 @@ end)
 
 					if not BindSettings.HoldToInteract then
 						BindV.Active = not BindV.Active
-						local Success, Response = pcall(function()
-							BindSettings.Callback(BindV.Active)
-						end)
-						if not Success then
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-							Bind.Title.Text = "Callback Error"
-							print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-							wait(0.5)
-							Bind.Title.Text = BindSettings.Name
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-						end
-					else
-						wait(0.1)
-						if Held then
-							local Loop; Loop = RunService.Stepped:Connect(function()
-								if not Held then
-									local Success, Response = pcall(function()
-										BindSettings.Callback(false)
-									end)
-									if not Success then
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-										wait(0.5)
-										Bind.Title.Text = BindSettings.Name
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-									end 
-									Loop:Disconnect()
-								else
-									local Success, Response = pcall(function()
-										BindSettings.Callback(true)
-									end)
-									if not Success then
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-										wait(0.5)
-										Bind.Title.Text = BindSettings.Name
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-									end
-								end
-							end)	
-						end
-					end
+						local Success, Response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
+if not Success then
+	CallbackUtil.FlashError(Bind, BindSettings, Response)
+else
+	wait(0.1)
+	if Held then
+		local Loop
+		Loop = RunService.Stepped:Connect(function()
+			if not Held then
+				local Success, Response = CallbackUtil.Safe(BindSettings.Callback, false)
+				if not Success then
+					CallbackUtil.FlashError(Bind, BindSettings, Response)
 				end
-			end)
+				Loop:Disconnect()
+			else
+				local Success, Response = CallbackUtil.Safe(BindSettings.Callback, true)
+				if not Success then
+					CallbackUtil.FlashError(Bind, BindSettings, Response)
+				end
+			end
+		end)
+	end
+end
+
 
 			Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
 				TweenService:Create(Bind.BindFrame, TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 20, 0, 30)}):Play()
@@ -3559,113 +3363,85 @@ end)
 			UserInputService.InputBegan:Connect(function(input, processed)
 
 				if CheckingForKey then
-					if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode.K then
-						local SplitMessage = string.split(tostring(input.KeyCode), ".")
-						local NewKeyNoEnum = SplitMessage[3]
-						Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
-						BindSettings.CurrentBind = tostring(NewKeyNoEnum)
-						Bind.BindFrame.BindBox:ReleaseFocus()
-					end
-				elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind] and not processed) then -- Test
-					local Held = true
-					local Connection
-					Connection = input.Changed:Connect(function(prop)
-						if prop == "UserInputState" then
-							Connection:Disconnect()
-							Held = false
-						end
-					end)
+	if input.KeyCode ~= Enum.KeyCode.Unknown and input.KeyCode ~= Enum.KeyCode.K then
+		local SplitMessage = string.split(tostring(input.KeyCode), ".")
+		local NewKeyNoEnum = SplitMessage[3]
+		Bind.BindFrame.BindBox.Text = tostring(NewKeyNoEnum)
+		BindSettings.CurrentBind = tostring(NewKeyNoEnum)
+		Bind.BindFrame.BindBox:ReleaseFocus()
+	end
+elseif BindSettings.CurrentBind ~= nil and (input.KeyCode == Enum.KeyCode[BindSettings.CurrentBind] and not processed) then -- Test
+	local Held = true
+	local Connection
+	Connection = input.Changed:Connect(function(prop)
+		if prop == "UserInputState" then
+			Connection:Disconnect()
+			Held = false
+		end
+	end)
 
-					if not BindSettings.HoldToInteract then
-						BindV.Active = not BindV.Active
-						local Success, Response = pcall(function()
-							BindSettings.Callback(BindV.Active)
-						end)
-						if not Success then
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-							Bind.Title.Text = "Callback Error"
-							print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-							wait(0.5)
-							Bind.Title.Text = BindSettings.Name
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-							TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-							TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-						end
-					else
-						wait(0.1)
-						if Held then
-							local Loop; Loop = RunService.Stepped:Connect(function()
-								if not Held then
-									local Success, Response = pcall(function()
-										BindSettings.Callback(false)
-									end)
-									if not Success then
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-										wait(0.5)
-										Bind.Title.Text = BindSettings.Name
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-									end 
-									Loop:Disconnect()
-								else
-									local Success, Response = pcall(function()
-										BindSettings.Callback(true)
-									end)
-									if not Success then
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-										Bind.Title.Text = "Callback Error"
-										print("Aurexis Interface Library | "..BindSettings.Name.." Callback Error " ..tostring(Response))
-										wait(0.5)
-										Bind.Title.Text = BindSettings.Name
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-										TweenService:Create(Bind, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-										TweenService:Create(Bind.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-									end
-								end
-							end)	
-						end
+	if not BindSettings.HoldToInteract then
+		BindV.Active = not BindV.Active
+		local Success, Response = CallbackUtil.Safe(BindSettings.Callback, BindV.Active)
+		if not Success then
+			CallbackUtil.FlashError(Bind, BindSettings, Response)
+		end
+	else
+		task.wait(0.1)
+		if Held then
+			local Loop
+			Loop = RunService.Stepped:Connect(function()
+				if not Held then
+					local Success, Response = CallbackUtil.Safe(BindSettings.Callback, false)
+					if not Success then
+						CallbackUtil.FlashError(Bind, BindSettings, Response)
+					end
+					Loop:Disconnect()
+				else
+					local Success, Response = CallbackUtil.Safe(BindSettings.Callback, true)
+					if not Success then
+						CallbackUtil.FlashError(Bind, BindSettings, Response)
 					end
 				end
 			end)
+		end
+	end
+end
 
-			Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
-				TweenService:Create(Bind.BindFrame, TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 30)}):Play()
-			end)
+-- 🔧 Textgrößen-Anpassung (korrekt platziert)
+Bind.BindFrame.BindBox:GetPropertyChangedSignal("Text"):Connect(function()
+	TweenService:Create(
+		Bind.BindFrame,
+		TweenInfo.new(0.55, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out),
+		{Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 30)}
+	):Play()
+end)
 
-			function BindV:Set(NewBindSettings)
+-- ⚙️ Dynamisches Setzen der Bindeinstellungen
+function BindV:Set(NewBindSettings)
+	NewBindSettings = Kwargify({
+		Name = BindSettings.Name,
+		Description = BindSettings.Description,
+		CurrentBind = BindSettings.CurrentBind,
+		HoldToInteract = BindSettings.HoldToInteract,
+		Callback = BindSettings.Callback
+	}, NewBindSettings or {})
 
-				NewBindSettings = Kwargify({
-					Name = BindSettings.Name,
-					Description = BindSettings.Description,
-					CurrentBind =  BindSettings.CurrentBind,
-					HoldToInteract = BindSettings.HoldToInteract,
-					Callback = BindSettings.Callback
-				}, NewBindSettings or {})
+	BindV.Settings = NewBindSettings
+	BindSettings = NewBindSettings
 
-				BindV.Settings = NewBindSettings
-				BindSettings = NewBindSettings
+	Bind.Name = BindSettings.Name
+	Bind.Title.Text = BindSettings.Name
+	if BindSettings.Description ~= nil and BindSettings.Description ~= "" and Bind.Desc ~= nil then
+		Bind.Desc.Text = BindSettings.Description
+	end
 
-				Bind.Name = BindSettings.Name
-				Bind.Title.Text = BindSettings.Name
-				if BindSettings.Description ~= nil and BindSettings.Description ~= "" and Bind.Desc ~= nil then
-					Bind.Desc.Text = BindSettings.Description
-				end
+	Bind.BindFrame.BindBox.Text = BindSettings.CurrentBind
+	Bind.BindFrame.BindBox.Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 42)
 
-				Bind.BindFrame.BindBox.Text = BindSettings.CurrentBind
-				Bind.BindFrame.BindBox.Size = UDim2.new(0, Bind.BindFrame.BindBox.TextBounds.X + 16, 0, 42)
+	-- Aurexis.Flags[BindSettings.Flag] = BindSettings
+end
 
-				-- Aurexis.Flags[BindSettings.Flag] = BindSettings
-
-			end
 
 			function BindV:Destroy()
 				Bind.Visible = false
@@ -3900,25 +3676,15 @@ end)
 			end
 
 			local function SafeCallback(param, c2)
-				local Success, Response = pcall(function()
-					DropdownSettings.Callback(param)
-				end)
-				if not Success then
-					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-					Dropdown.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..DropdownSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					Dropdown.Title.Text = DropdownSettings.Name
-					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(Dropdown, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-					TweenService:Create(Dropdown.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				end
-				if Success and c2 then
-					c2()
-				end
-			end
+	             local Success, Response = CallbackUtil.Safe(DropdownSettings.Callback, param)
+	            if not Success then 
+								CallbackUtil.FlashError(Dropdown, DropdownSettings, Response) 
+							end
+								if Success and c2 then 
+								c2() 
+							end 
+						end
+
 
 			-- fixed by justhey
 			Dropdown.Selected:GetPropertyChangedSignal("Text"):Connect(function()
@@ -4240,25 +4006,15 @@ end)
 			end)
 
 			local function SafeCallback(param, c2)
-				local Success, Response = pcall(function()
-					ColorPickerSettings.Callback(param)
-				end)
-				if not Success then
-					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(85, 0, 0)}):Play()
-					TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
-					ColorPicker.Title.Text = "Callback Error"
-					print("Aurexis Interface Library | "..ColorPickerSettings.Name.." Callback Error " ..tostring(Response))
-					wait(0.5)
-					ColorPicker.Title.Text = ColorPickerSettings.Name
-					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0.5}):Play()
-					TweenService:Create(ColorPicker, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {BackgroundColor3 = Color3.fromRGB(32, 30, 38)}):Play()
-					TweenService:Create(ColorPicker.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {Transparency = 0.5}):Play()
-				end
-				if Success and c2 then
-					c2()
-				end
-			end
+	            local Success, Response = CallbackUtil.Safe(DropdownSettings.Callback, param) 
+							if not Success then 
+								CallbackUtil.FlashError(Dropdown, DropdownSettings, Response)
+							end 
+							if Success and c2 then
+								c2()
+							end 
+						end
+
 
 			local opened = false
 
