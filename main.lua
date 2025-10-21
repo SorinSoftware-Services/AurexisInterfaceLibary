@@ -35,7 +35,6 @@ by Nebula Softworks
 
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Unstable/New/"
-
 local Release = "Closed Beta [v 0.1]"
 
 local Aurexis = { 
@@ -176,6 +175,8 @@ end
 local cleanedLegacyBlur = false
 local blurBindings = {}
 local blurUid = 0
+local sharedDepthOfField
+local activeBlurCount = 0
 
 local function ensureBlurRoot()
 	local camera = workspace.CurrentCamera
@@ -189,6 +190,29 @@ local function ensureBlurRoot()
 		root.Parent = camera
 	end
 	return root
+end
+
+local function ensureDepthOfField()
+	if isStudio then
+		return nil
+	end
+
+	if not sharedDepthOfField or sharedDepthOfField.Parent ~= Lighting then
+		sharedDepthOfField = Lighting:FindFirstChild("AurexisDepthOfField")
+		if not sharedDepthOfField then
+			sharedDepthOfField = Instance.new("DepthOfFieldEffect")
+			sharedDepthOfField.Name = "AurexisDepthOfField"
+			sharedDepthOfField.Parent = Lighting
+		end
+	end
+
+	sharedDepthOfField.FarIntensity = 0
+	sharedDepthOfField.FocusDistance = 51.6
+	sharedDepthOfField.InFocusRadius = 50
+	sharedDepthOfField.NearIntensity = 6
+	sharedDepthOfField.Enabled = activeBlurCount > 0
+
+	return sharedDepthOfField
 end
 
 local function cleanupBlur(guiObject)
@@ -208,6 +232,14 @@ local function cleanupBlur(guiObject)
 	end
 	if data.wrapper then
 		data.wrapper:Destroy()
+	end
+
+	if activeBlurCount > 0 then
+		activeBlurCount = activeBlurCount - 1
+	end
+	local effect = ensureDepthOfField()
+	if effect then
+		effect.Enabled = activeBlurCount > 0
 	end
 end
 
@@ -374,6 +406,12 @@ local function ensureGuiBlur(guiObject)
 		parts = parts,
 		uid = uid,
 	}
+
+	activeBlurCount = activeBlurCount + 1
+	local effect = ensureDepthOfField()
+	if effect then
+		effect.Enabled = true
+	end
 
 	return blurBindings[guiObject]
 end
@@ -1061,20 +1099,18 @@ function Aurexis:CreateWindow(WindowSettings)
 
 	local FirstTab = true
 
----------------------------------------------------------------- -- HomeTab START
+-- HomeTab START
 	
 -- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
-print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
-
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
--- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
 Window:CreateHomeTab()
-
 FirstTab = false
 
----------------------------------------------------------------- -- HomeTab END
+-- HomeTab END
+
+	
 -- Stolen From Sirius Stuff ends here
 
 	function Window:CreateTab(TabSettings)
