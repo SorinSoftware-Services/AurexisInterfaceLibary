@@ -1,5 +1,4 @@
 -- src/components/home-tab.lua
-print("[Aurexis] HomeTab module loaded successfully")
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -173,7 +172,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local refreshTimer = 0
 
 	while task.wait(0.5) do
-		-- 🧭 Serverinformationen aktualisieren
+		-- Serverinformationen aktualisieren
 		HomeTabPage.detailsholder.dashboard.Server.Players.Value.Text = #Players:GetPlayers() .. " playing"
 		HomeTabPage.detailsholder.dashboard.Server.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
 
@@ -184,7 +183,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 		HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
 
-		-- 🕒 Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
+		-- Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
 		if refreshTimer <= 0 then
 			task.spawn(function()
 				local ok, err = pcall(checkFriends)
