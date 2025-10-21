@@ -34,8 +34,8 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Unstable/New/"
-local Release = "Closed Beta [v 0.1]"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
+local Release = "Closed Beta [v 0.2]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
