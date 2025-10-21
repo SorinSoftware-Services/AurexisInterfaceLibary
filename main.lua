@@ -53,6 +53,7 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
+local Lighting = game:GetService("Lighting")
 
 local isStudio
 local website = "https://scripts.sorinservice.online"
@@ -70,7 +71,7 @@ local function requireRemote(path)
 	if ok then
 		return result
 	else
-		warn("âš ï¸ Failed to load module: " .. path .. " â†’ " .. tostring(result))
+		warn("⚠️ Failed to load module: " .. path .. " → " .. tostring(result))
 		return {}
 	end
 end
@@ -173,6 +174,32 @@ function tween(object, goal, callback, tweenin)
 end
 
 local cleanedLegacyBlur = false
+local activeBlurRefs = 0
+local sharedDepthOfField
+
+local function ensureDepthOfField()
+	if isStudio then
+		return nil
+	end
+
+	if not sharedDepthOfField or sharedDepthOfField.Parent ~= Lighting then
+		sharedDepthOfField = Lighting:FindFirstChild("AurexisDepthOfField")
+		if not sharedDepthOfField then
+			sharedDepthOfField = Instance.new("DepthOfFieldEffect")
+			sharedDepthOfField.Name = "AurexisDepthOfField"
+			sharedDepthOfField.Parent = Lighting
+		end
+	end
+
+	sharedDepthOfField.FarIntensity = 0
+	sharedDepthOfField.FocusDistance = 51.6
+	sharedDepthOfField.InFocusRadius = 50
+	sharedDepthOfField.NearIntensity = 6
+	sharedDepthOfField.Enabled = activeBlurRefs > 0
+
+	return sharedDepthOfField
+end
+
 local function BlurModule(Frame)
 	local guiObject = Frame
 	if not guiObject or not guiObject:IsA("GuiObject") then
@@ -188,6 +215,14 @@ local function BlurModule(Frame)
 				legacy:Destroy()
 			end
 		end
+
+		if not isStudio then
+			for _, effect in ipairs(Lighting:GetChildren()) do
+				if effect:IsA("DepthOfFieldEffect") and string.sub(effect.Name, 1, 4) == "DPT_" then
+					effect:Destroy()
+				end
+			end
+		end
 	end
 
 	local existing = guiObject:FindFirstChild("AutoDropShadow")
@@ -195,17 +230,26 @@ local function BlurModule(Frame)
 		return existing
 	end
 
+	if not guiObject:GetAttribute("AurexisBlurApplied") then
+		guiObject:SetAttribute("AurexisBlurApplied", true)
+		activeBlurRefs = activeBlurRefs + 1
+		local depth = ensureDepthOfField()
+		if depth then
+			depth.Enabled = true
+		end
+	end
+
 	local shadow = Instance.new("ImageLabel")
 	shadow.Name = "AutoDropShadow"
 	shadow.BackgroundTransparency = 1
 	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadow.Position = UDim2.new(0.5, 0, 0.5, 4)
-	shadow.Size = UDim2.new(1, 32, 1, 32)
-	shadow.Image = "rbxassetid://6015897843"
+	shadow.Position = UDim2.new(0.5, 0, 0.5, 6)
+	shadow.Size = UDim2.new(1, 40, 1, 40)
+	shadow.Image = "rbxassetid://13160452170"
 	shadow.ImageColor3 = Color3.new(0, 0, 0)
-	shadow.ImageTransparency = 0.8
+	shadow.ImageTransparency = 0.985
 	shadow.ScaleType = Enum.ScaleType.Slice
-	shadow.SliceCenter = Rect.new(49, 49, 51, 51)
+	shadow.SliceCenter = Rect.new(60, 60, 60, 60)
 	shadow.ZIndex = math.max(0, guiObject.ZIndex - 1)
 	shadow.Parent = guiObject
 
@@ -215,10 +259,26 @@ local function BlurModule(Frame)
 		end
 	end)
 
-	guiObject.Destroying:Connect(function()
+	local function releaseBlur()
+		if guiObject:GetAttribute("AurexisBlurApplied") then
+			guiObject:SetAttribute("AurexisBlurApplied", nil)
+			activeBlurRefs = math.max(0, activeBlurRefs - 1)
+			local depth = ensureDepthOfField()
+			if depth and activeBlurRefs == 0 then
+				depth.Enabled = false
+			end
+		end
+
 		zConn:Disconnect()
 		if shadow.Parent then
 			shadow:Destroy()
+		end
+	end
+
+	guiObject.Destroying:Connect(releaseBlur)
+	guiObject.AncestryChanged:Connect(function(_, parent)
+		if not parent then
+			releaseBlur()
 		end
 	end)
 
