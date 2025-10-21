@@ -176,10 +176,11 @@ end
 local cleanedLegacyBlur = false
 local activeBlurRefs = 0
 local sharedDepthOfField
+local sharedBlurEffect
 
-local function ensureDepthOfField()
+local function ensurePostProcessing()
 	if isStudio then
-		return nil
+		return
 	end
 
 	if not sharedDepthOfField or sharedDepthOfField.Parent ~= Lighting then
@@ -191,13 +192,25 @@ local function ensureDepthOfField()
 		end
 	end
 
+	if not sharedBlurEffect or sharedBlurEffect.Parent ~= Lighting then
+		sharedBlurEffect = Lighting:FindFirstChild("AurexisBlurEffect")
+		if not sharedBlurEffect then
+			sharedBlurEffect = Instance.new("BlurEffect")
+			sharedBlurEffect.Name = "AurexisBlurEffect"
+			sharedBlurEffect.Size = 0
+			sharedBlurEffect.Parent = Lighting
+		end
+	end
+
 	sharedDepthOfField.FarIntensity = 0
 	sharedDepthOfField.FocusDistance = 51.6
 	sharedDepthOfField.InFocusRadius = 50
 	sharedDepthOfField.NearIntensity = 6
 	sharedDepthOfField.Enabled = activeBlurRefs > 0
 
-	return sharedDepthOfField
+	if sharedBlurEffect then
+		sharedBlurEffect.Size = activeBlurRefs > 0 and 18 or 0
+	end
 end
 
 local function BlurModule(Frame)
@@ -233,10 +246,7 @@ local function BlurModule(Frame)
 	if not guiObject:GetAttribute("AurexisBlurApplied") then
 		guiObject:SetAttribute("AurexisBlurApplied", true)
 		activeBlurRefs = activeBlurRefs + 1
-		local depth = ensureDepthOfField()
-		if depth then
-			depth.Enabled = true
-		end
+		ensurePostProcessing()
 	end
 
 	local shadow = Instance.new("ImageLabel")
@@ -263,10 +273,7 @@ local function BlurModule(Frame)
 		if guiObject:GetAttribute("AurexisBlurApplied") then
 			guiObject:SetAttribute("AurexisBlurApplied", nil)
 			activeBlurRefs = math.max(0, activeBlurRefs - 1)
-			local depth = ensureDepthOfField()
-			if depth and activeBlurRefs == 0 then
-				depth.Enabled = false
-			end
+			ensurePostProcessing()
 		end
 
 		zConn:Disconnect()
@@ -894,6 +901,7 @@ function Aurexis:CreateWindow(WindowSettings)
 	
 -- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
+print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
 
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
