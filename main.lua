@@ -174,43 +174,208 @@ function tween(object, goal, callback, tweenin)
 end
 
 local cleanedLegacyBlur = false
-local activeBlurRefs = 0
-local sharedDepthOfField
-local sharedBlurEffect
+local blurBindings = {}
+local blurUid = 0
 
-local function ensurePostProcessing()
-	if isStudio then
+local function ensureBlurRoot()
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return nil
+	end
+	local root = camera:FindFirstChild("AurexisBlur")
+	if not root then
+		root = Instance.new("Folder")
+		root.Name = "AurexisBlur"
+		root.Parent = camera
+	end
+	return root
+end
+
+local function cleanupBlur(guiObject)
+	local data = blurBindings[guiObject]
+	if not data then
 		return
 	end
+	blurBindings[guiObject] = nil
+	if data.step then
+		data.step:Disconnect()
+	end
+	if data.uid then
+		RunService:UnbindFromRenderStep(data.uid)
+	end
+	if data.folder then
+		data.folder:Destroy()
+	end
+	if data.wrapper then
+		data.wrapper:Destroy()
+	end
+end
 
-	if not sharedDepthOfField or sharedDepthOfField.Parent ~= Lighting then
-		sharedDepthOfField = Lighting:FindFirstChild("AurexisDepthOfField")
-		if not sharedDepthOfField then
-			sharedDepthOfField = Instance.new("DepthOfFieldEffect")
-			sharedDepthOfField.Name = "AurexisDepthOfField"
-			sharedDepthOfField.Parent = Lighting
+local function ensureGuiBlur(guiObject)
+	if blurBindings[guiObject] then
+		return blurBindings[guiObject]
+	end
+
+	local root = ensureBlurRoot()
+	local camera = workspace.CurrentCamera
+	if not root or not camera then
+		return nil
+	end
+
+	local wrapper = Instance.new("Frame")
+	wrapper.Name = guiObject.Name .. "_BlurFrame"
+	wrapper.Parent = guiObject
+	wrapper.Size = UDim2.new(0.95, 0, 0.95, 0)
+	wrapper.Position = UDim2.new(0.5, 0, 0.5, 0)
+	wrapper.AnchorPoint = Vector2.new(0.5, 0.5)
+	wrapper.BackgroundTransparency = 1
+
+	blurUid += 1
+	local uid = "neon::" .. tostring(blurUid)
+	local parts = {}
+	local folder = Instance.new("Folder")
+	folder.Name = wrapper.Name
+	folder.Parent = root
+
+	local parents = {}
+	local function addAncestor(child)
+		if child:IsA("GuiObject") then
+			parents[#parents + 1] = child
+			if child.Parent then
+				addAncestor(child.Parent)
+			end
+		end
+	end
+	addAncestor(wrapper)
+
+	local acos, max, pi, sqrt = math.acos, math.max, math.pi, math.sqrt
+	local sz = 0.22
+
+	local function drawTriangle(v1, v2, v3, p0, p1)
+		local s1 = (v1 - v2).Magnitude
+		local s2 = (v2 - v3).Magnitude
+		local s3 = (v3 - v1).Magnitude
+		local smax = max(s1, s2, s3)
+		local A, B, C
+		if smax == s1 then
+			A, B, C = v1, v2, v3
+		elseif smax == s2 then
+			A, B, C = v2, v3, v1
+		else
+			A, B, C = v3, v1, v2
+		end
+
+		local para = ((B - A).X*(C - A).X + (B - A).Y*(C - A).Y + (B - A).Z*(C - A).Z) / (A - B).Magnitude
+		local perp = sqrt((C - A).Magnitude^2 - para * para)
+		local dif_para = (A - B).Magnitude - para
+
+		local st = CFrame.new(B, A)
+		local za = CFrame.Angles(pi/2, 0, 0)
+
+		local cf0 = st
+		local topLook = (cf0 * za).LookVector
+		local midPoint = A + CFrame.new(A, B).LookVector * para
+		local neededLook = CFrame.new(midPoint, C).LookVector
+		local dot = topLook.X*neededLook.X + topLook.Y*neededLook.Y + topLook.Z*neededLook.Z
+
+		local ac = CFrame.Angles(0, 0, acos(dot))
+
+		cf0 = cf0 * ac
+		if ((cf0 * za).LookVector - neededLook).Magnitude > 0.01 then
+			cf0 = cf0 * CFrame.Angles(0, 0, -2 * acos(dot))
+		end
+		cf0 = cf0 * CFrame.new(0, perp/2, -(dif_para + para/2))
+
+		local cf1 = st * ac * CFrame.Angles(0, pi, 0)
+		if ((cf1 * za).LookVector - neededLook).Magnitude > 0.01 then
+			cf1 = cf1 * CFrame.Angles(0, 0, 2 * acos(dot))
+		end
+		cf1 = cf1 * CFrame.new(0, perp/2, dif_para/2)
+
+		if not p0 then
+			p0 = Instance.new("Part")
+			p0.FormFactor = Enum.FormFactor.Custom
+			p0.TopSurface = Enum.SurfaceType.Smooth
+			p0.BottomSurface = Enum.SurfaceType.Smooth
+			p0.Anchored = true
+			p0.CanCollide = false
+			p0.CastShadow = false
+			p0.Material = Enum.Material.Glass
+			p0.Size = Vector3.new(sz, sz, sz)
+			local mesh = Instance.new("SpecialMesh")
+			mesh.MeshType = Enum.MeshType.Wedge
+			mesh.Name = "WedgeMesh"
+			mesh.Parent = p0
+		end
+		p0.WedgeMesh.Scale = Vector3.new(0, perp/sz, para/sz)
+		p0.CFrame = cf0
+
+		if not p1 then
+			p1 = p0:Clone()
+		end
+		p1.WedgeMesh.Scale = Vector3.new(0, perp/sz, dif_para/sz)
+		p1.CFrame = cf1
+
+		return p0, p1
+	end
+
+	local function drawQuad(v1, v2, v3, v4, partsTable)
+		partsTable[1], partsTable[2] = drawTriangle(v1, v2, v3, partsTable[1], partsTable[2])
+		partsTable[3], partsTable[4] = drawTriangle(v3, v2, v4, partsTable[3], partsTable[4])
+	end
+
+	local function updateOrientation(fetchProps)
+		local zIndex = 1 - 0.05 * wrapper.ZIndex
+
+		local tl = wrapper.AbsolutePosition
+		local br = wrapper.AbsolutePosition + wrapper.AbsoluteSize
+        local tr = Vector2.new(br.X, tl.Y)
+        local bl = Vector2.new(tl.X, br.Y)
+
+		local rot = 0
+		for _, ancestor in ipairs(parents) do
+			rot = rot + ancestor.Rotation
+		end
+		if rot ~= 0 and rot % 180 ~= 0 then
+			local mid = tl:Lerp(br, 0.5)
+			local s = math.sin(math.rad(rot))
+			local c = math.cos(math.rad(rot))
+			tl = Vector2.new(c*(tl.X - mid.X) - s*(tl.Y - mid.Y), s*(tl.X - mid.X) + c*(tl.Y - mid.Y)) + mid
+			tr = Vector2.new(c*(tr.X - mid.X) - s*(tr.Y - mid.Y), s*(tr.X - mid.X) + c*(tr.Y - mid.Y)) + mid
+			bl = Vector2.new(c*(bl.X - mid.X) - s*(bl.Y - mid.Y), s*(bl.X - mid.X) + c*(bl.Y - mid.Y)) + mid
+			br = Vector2.new(c*(br.X - mid.X) - s*(br.Y - mid.Y), s*(br.X - mid.X) + c*(br.Y - mid.Y)) + mid
+		end
+
+		drawQuad(
+			camera:ScreenPointToRay(tl.X, tl.Y, zIndex).Origin,
+			camera:ScreenPointToRay(tr.X, tr.Y, zIndex).Origin,
+			camera:ScreenPointToRay(bl.X, bl.Y, zIndex).Origin,
+			camera:ScreenPointToRay(br.X, br.Y, zIndex).Origin,
+			parts
+		)
+
+		if fetchProps then
+			for _, part in ipairs(parts) do
+				part.Parent = folder
+				part.Transparency = 0.98
+				part.BrickColor = BrickColor.new("Institutional white")
+			end
 		end
 	end
 
-	if not sharedBlurEffect or sharedBlurEffect.Parent ~= Lighting then
-		sharedBlurEffect = Lighting:FindFirstChild("AurexisBlurEffect")
-		if not sharedBlurEffect then
-			sharedBlurEffect = Instance.new("BlurEffect")
-			sharedBlurEffect.Name = "AurexisBlurEffect"
-			sharedBlurEffect.Size = 0
-			sharedBlurEffect.Parent = Lighting
-		end
-	end
+	updateOrientation(true)
+	RunService:BindToRenderStep(uid, 2000, function()
+		updateOrientation(false)
+	end)
 
-	sharedDepthOfField.FarIntensity = 0
-	sharedDepthOfField.FocusDistance = 51.6
-	sharedDepthOfField.InFocusRadius = 50
-	sharedDepthOfField.NearIntensity = 6
-	sharedDepthOfField.Enabled = activeBlurRefs > 0
+	blurBindings[guiObject] = {
+		wrapper = wrapper,
+		folder = folder,
+		parts = parts,
+		uid = uid,
+	}
 
-	if sharedBlurEffect then
-		sharedBlurEffect.Size = activeBlurRefs > 0 and 18 or 0
-	end
+	return blurBindings[guiObject]
 end
 
 local function BlurModule(Frame)
@@ -245,8 +410,7 @@ local function BlurModule(Frame)
 
 	if not guiObject:GetAttribute("AurexisBlurApplied") then
 		guiObject:SetAttribute("AurexisBlurApplied", true)
-		activeBlurRefs = activeBlurRefs + 1
-		ensurePostProcessing()
+		ensureGuiBlur(guiObject)
 	end
 
 	local shadow = Instance.new("ImageLabel")
@@ -272,9 +436,9 @@ local function BlurModule(Frame)
 	local function releaseBlur()
 		if guiObject:GetAttribute("AurexisBlurApplied") then
 			guiObject:SetAttribute("AurexisBlurApplied", nil)
-			activeBlurRefs = math.max(0, activeBlurRefs - 1)
-			ensurePostProcessing()
 		end
+
+		cleanupBlur(guiObject)
 
 		zConn:Disconnect()
 		if shadow.Parent then
