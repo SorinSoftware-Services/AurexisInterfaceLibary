@@ -76,7 +76,6 @@ end
 
 -- Load Icon Module
 local IconModule = requireRemote("/src/icons.lua")
-local BlurModule = requireRemote("/src/modules/blur.lua")
 
 
 -- Other Variables
