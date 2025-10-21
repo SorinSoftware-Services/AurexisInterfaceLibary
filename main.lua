@@ -894,7 +894,6 @@ function Aurexis:CreateWindow(WindowSettings)
 	
 -- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
-print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
 
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
