@@ -33,7 +33,7 @@ by Nebula Softworks
 ]]
 
 
-local BASE_URL = "https://github.com/SorinSoftware-Services/AurexisInterfaceLibrary/tree/Unstable/New/"
+local BASE_URL = "https://github.com/SorinSoftware-Services/AurexisInterfaceLibrary/tree/Unstable/New"
 
 local Release = "Closed Beta [v 0.1]"
 
@@ -75,8 +75,8 @@ local function requireRemote(path)
 end
 
 -- Load Icon Module
-local IconModule = requireRemote("src/icons.lua")
-local BlurModule = requireRemote("src/modules/blur.lua")
+local IconModule = requireRemote("/src/icons.lua")
+local BlurModule = requireRemote("/src/modules/blur.lua")
 
 
 -- Other Variables
