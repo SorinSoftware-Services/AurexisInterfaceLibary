@@ -1,4 +1,5 @@
 -- src/components/home-tab.lua
+print("[Aurexis] HomeTab module loaded successfully")
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -30,69 +31,12 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		and HomeTabPage.detailsholder
 		and HomeTabPage.detailsholder.dashboard
 		and HomeTabPage.detailsholder.dashboard.Server
+	local localTimeCard
 
 	-- Normalize the server stats panel: drop legacy "Join Script" tile and stack remaining cards vertically.
 	local function configureServerPanel()
 		if not serverPanel then
 			return
-		end
-
-		local preservedCards = {}
-		local removalTargets = {}
-
-		local function markForRemoval(candidate)
-			if not candidate then
-				return
-			end
-			if candidate.Parent == serverPanel and candidate:IsA("Frame") then
-				removalTargets[candidate] = true
-			else
-				local ancestor = candidate:FindFirstAncestorWhichIsA("Frame")
-				while ancestor and ancestor.Parent ~= serverPanel do
-					ancestor = ancestor.Parent
-				end
-				if ancestor and ancestor:IsA("Frame") and ancestor.Parent == serverPanel then
-					removalTargets[ancestor] = true
-				end
-			end
-		end
-
-		for _, descendant in ipairs(serverPanel:GetDescendants()) do
-			if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
-				local text = string.lower(descendant.Text or "")
-				if text:find("join") then
-					markForRemoval(descendant)
-				end
-			end
-		end
-
-		for _, child in ipairs(serverPanel:GetChildren()) do
-			if child:IsA("UIGridStyleLayout") then
-				child:Destroy()
-			elseif child:IsA("Frame") then
-				local childName = string.lower(child.Name or "")
-				if childName:find("join") then
-					removalTargets[child] = true
-				else
-					local titleLabel = child:FindFirstChild("Title")
-					if titleLabel and titleLabel:IsA("TextLabel") then
-						local titleText = string.lower(titleLabel.Text or "")
-						if titleText:find("join") then
-							removalTargets[child] = true
-						end
-					end
-				end
-			end
-		end
-
-		for card in pairs(removalTargets) do
-			card:Destroy()
-		end
-
-		for _, child in ipairs(serverPanel:GetChildren()) do
-			if child:IsA("Frame") then
-				table.insert(preservedCards, child)
-			end
 		end
 
 		local layout = serverPanel:FindFirstChild("ServerListLayout")
@@ -107,38 +51,42 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			layout.Parent = serverPanel
 		end
 
-		for index, card in ipairs(preservedCards) do
-			if card.Parent == serverPanel then
-				card.LayoutOrder = index
-				card.Size = UDim2.new(1, 0, card.Size.Y.Scale, card.Size.Y.Offset)
+		for _, card in ipairs(serverPanel:GetChildren()) do
+			if card:IsA("Frame") then
+				local cardName = string.lower(card.Name or "")
+				local titleLabel = card:FindFirstChild("Title")
+				local valueLabel = card:FindFirstChild("Value")
+				if titleLabel and valueLabel and titleLabel:IsA("TextLabel") and valueLabel:IsA("TextLabel") then
+					local titleText = string.lower(titleLabel.Text or "")
+					if cardName:find("join") or titleText:find("join") then
+						card.Name = "LocalTime"
+						titleLabel.Text = "Local Time"
+						valueLabel.Text = "--:--:--"
+						local interact = card:FindFirstChild("Interact")
+						if interact and interact:IsA("GuiObject") then
+							interact:Destroy()
+						end
+						localTimeCard = card
+					end
+				end
+			end
+		end
+
+		if not localTimeCard then
+			local card = serverPanel:FindFirstChild("LocalTime")
+			if card and card:IsA("Frame") then
+				local titleLabel = card:FindFirstChild("Title")
+				local valueLabel = card:FindFirstChild("Value")
+				if titleLabel and valueLabel then
+					titleLabel.Text = "Local Time"
+					valueLabel.Text = "--:--:--"
+					localTimeCard = card
+				end
 			end
 		end
 	end
 
 	configureServerPanel()
-	if serverPanel then
-		serverPanel.DescendantAdded:Connect(function(obj)
-			if not obj then
-				return
-			end
-			if obj:IsA("UIGridStyleLayout") then
-				task.defer(configureServerPanel)
-				return
-			end
-			if obj:IsA("Frame") then
-				if string.find(string.lower(obj.Name or ""), "join") then
-					task.defer(configureServerPanel)
-					return
-				end
-			end
-			if obj:IsA("TextLabel") or obj:IsA("TextButton") then
-				local text = string.lower(obj.Text or "")
-				if text:find("join") then
-					task.defer(configureServerPanel)
-				end
-			end
-		end)
-	end
 
 	function HomeTab:Activate()
 		tween(HomeTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
@@ -314,6 +262,12 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 		HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
+		if localTimeCard and localTimeCard.Parent then
+			local valueLabel = localTimeCard:FindFirstChild("Value")
+			if valueLabel and valueLabel:IsA("TextLabel") then
+				valueLabel.Text = os.date("%H:%M:%S")
+			end
+		end
 
 		-- 🕒 Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
 		if refreshTimer <= 0 then
