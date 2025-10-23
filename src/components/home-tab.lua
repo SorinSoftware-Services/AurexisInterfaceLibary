@@ -55,9 +55,25 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	-- === UI SETUP ===
 	HomeTabPage.icon.ImageLabel.Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-	HomeTabPage.player.Text.Text = "Hello, " .. Players.LocalPlayer.DisplayName
 	HomeTabPage.player.user.RichText = true
 	HomeTabPage.player.user.Text = "You are using <b>" .. Release .. "</b>"
+
+	local function getGreeting()
+		local ok, now = pcall(os.date, "*t")
+		local hour = (ok and now and now.hour) or 12
+
+		if hour >= 5 and hour < 12 then
+			return "Good morning"
+		elseif hour >= 12 and hour < 18 then
+			return "Good afternoon"
+		elseif hour >= 18 then
+			return "Good evening"
+		else
+			return "Hello night owl"
+		end
+	end
+
+	HomeTabPage.player.Text.Text = string.format("%s, %s", getGreeting(), Players.LocalPlayer.DisplayName)
 
 	local exec = (isStudio and "Studio (Debug)" or identifyexecutor()) or "Unknown"
 	HomeTabPage.detailsholder.dashboard.Client.Title.Text =  exec .. " User"
@@ -72,13 +88,13 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			message = "Good Executor. I think u can use all Scripts here."
 		elseif table.find(HomeTabSettings.BadExecutors, exec) then
 			color = Color3.fromRGB(255, 180, 50)
-			message = "Du nigger HS bre"
+			message = "Badass Exec :("
 		elseif table.find(HomeTabSettings.DetectedExecutors, exec) then
 			color = Color3.fromRGB(255, 60, 60)
 			message = "This executor is detected. Why the shit would you use this?!"
 		else
 			color = Color3.fromRGB(200, 200, 200)
-			message = "❔ This executor isn’t in my list. No idea if it’s good or bad."
+			message = "This executor isn't in my list. No idea if it's good or bad."
 		end
 
 		HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = message
