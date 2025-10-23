@@ -1,5 +1,4 @@
 -- src/components/home-tab.lua
-print("[Aurexis] HomeTab module loaded successfully")
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -27,66 +26,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	local HomeTabPage = Elements.Home
 	HomeTabPage.Visible = true
-	local serverPanel = HomeTabPage
-		and HomeTabPage.detailsholder
-		and HomeTabPage.detailsholder.dashboard
-		and HomeTabPage.detailsholder.dashboard.Server
-	local localTimeCard
-
-	-- Normalize the server stats panel: drop legacy "Join Script" tile and stack remaining cards vertically.
-	local function configureServerPanel()
-		if not serverPanel then
-			return
-		end
-
-		local layout = serverPanel:FindFirstChild("ServerListLayout")
-		if not layout then
-			layout = Instance.new("UIListLayout")
-			layout.Name = "ServerListLayout"
-			layout.SortOrder = Enum.SortOrder.LayoutOrder
-			layout.FillDirection = Enum.FillDirection.Vertical
-			layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-			layout.VerticalAlignment = Enum.VerticalAlignment.Top
-			layout.Padding = UDim.new(0, 8)
-			layout.Parent = serverPanel
-		end
-
-		for _, card in ipairs(serverPanel:GetChildren()) do
-			if card:IsA("Frame") then
-				local cardName = string.lower(card.Name or "")
-				local titleLabel = card:FindFirstChild("Title")
-				local valueLabel = card:FindFirstChild("Value")
-				if titleLabel and valueLabel and titleLabel:IsA("TextLabel") and valueLabel:IsA("TextLabel") then
-					local titleText = string.lower(titleLabel.Text or "")
-					if cardName:find("join") or titleText:find("join") then
-						card.Name = "LocalTime"
-						titleLabel.Text = "Local Time"
-						valueLabel.Text = "--:--:--"
-						local interact = card:FindFirstChild("Interact")
-						if interact and interact:IsA("GuiObject") then
-							interact:Destroy()
-						end
-						localTimeCard = card
-					end
-				end
-			end
-		end
-
-		if not localTimeCard then
-			local card = serverPanel:FindFirstChild("LocalTime")
-			if card and card:IsA("Frame") then
-				local titleLabel = card:FindFirstChild("Title")
-				local valueLabel = card:FindFirstChild("Value")
-				if titleLabel and valueLabel then
-					titleLabel.Text = "Local Time"
-					valueLabel.Text = "--:--:--"
-					localTimeCard = card
-				end
-			end
-		end
-	end
-
-	configureServerPanel()
 
 	function HomeTab:Activate()
 		tween(HomeTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
@@ -119,6 +58,23 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	HomeTabPage.player.user.RichText = true
 	HomeTabPage.player.user.Text = "You are using <b>" .. Release .. "</b>"
 
+	local function getGreeting()
+		local ok, now = pcall(os.date, "*t")
+		local hour = (ok and now and now.hour) or 12
+
+		if hour >= 5 and hour < 12 then
+			return "Good morning"
+		elseif hour >= 12 and hour < 18 then
+			return "Good afternoon"
+		elseif hour >= 18 then
+			return "Good evening"
+		else
+			return "Hello night owl"
+		end
+	end
+
+	HomeTabPage.player.Text.Text = string.format("%s, %s", getGreeting(), Players.LocalPlayer.DisplayName)
+
 	local exec = (isStudio and "Studio (Debug)" or identifyexecutor()) or "Unknown"
 	HomeTabPage.detailsholder.dashboard.Client.Title.Text =  exec .. " User"
 
@@ -132,13 +88,13 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			message = "Good Executor. I think u can use all Scripts here."
 		elseif table.find(HomeTabSettings.BadExecutors, exec) then
 			color = Color3.fromRGB(255, 180, 50)
-			message = "Badass Exec. Use a better one!"
+			message = "Badass Exec :("
 		elseif table.find(HomeTabSettings.DetectedExecutors, exec) then
 			color = Color3.fromRGB(255, 60, 60)
 			message = "This executor is detected. Why the shit would you use this?!"
 		else
 			color = Color3.fromRGB(200, 200, 200)
-			message = "❔ This executor isn’t in my list. No idea if it’s good or bad."
+			message = "This executor isn't in my list. No idea if it's good or bad."
 		end
 
 		HomeTabPage.detailsholder.dashboard.Client.Subtitle.Text = message
@@ -169,26 +125,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	-- === FRIENDS / STATS HANDLING ===
 	local Player = Players.LocalPlayer
-	local function getGreeting()
-		local success, now = pcall(os.date, "*t")
-		if not success or not now or not now.hour then
-			return "Hello"
-		end
-
-		local hour = now.hour
-		if hour >= 5 and hour < 12 then
-			return "Good morning"
-		elseif hour >= 12 and hour < 18 then
-			return "Good afternoon"
-		elseif hour >= 18 and hour < 22 then
-			return "Good evening"
-		else
-			return "Good night"
-		end
-	end
-
-	local greeting = getGreeting()
-	HomeTabPage.player.Text.Text = string.format("%s, %s", greeting, Players.LocalPlayer.DisplayName)
 	local friendsCooldown = 0
 	local Localization = game:GetService("LocalizationService")
 
@@ -252,7 +188,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local refreshTimer = 0
 
 	while task.wait(0.5) do
-		-- 🧭 Serverinformationen aktualisieren
+		-- Serverinformationen aktualisieren
 		HomeTabPage.detailsholder.dashboard.Server.Players.Value.Text = #Players:GetPlayers() .. " playing"
 		HomeTabPage.detailsholder.dashboard.Server.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
 
@@ -262,14 +198,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 		HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
-		if localTimeCard and localTimeCard.Parent then
-			local valueLabel = localTimeCard:FindFirstChild("Value")
-			if valueLabel and valueLabel:IsA("TextLabel") then
-				valueLabel.Text = os.date("%H:%M:%S")
-			end
-		end
 
-		-- 🕒 Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
+		-- Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
 		if refreshTimer <= 0 then
 			task.spawn(function()
 				local ok, err = pcall(checkFriends)
