@@ -1,4 +1,5 @@
 -- src/components/home-tab.lua
+print("[Aurexis] HomeTab module loaded successfully")
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -26,6 +27,67 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	local HomeTabPage = Elements.Home
 	HomeTabPage.Visible = true
+
+	-- Normalize the server stats panel: drop legacy "Join Script" tile and stack remaining cards vertically.
+	local function configureServerPanel()
+		local serverPanel = HomeTabPage
+			and HomeTabPage.detailsholder
+			and HomeTabPage.detailsholder.dashboard
+			and HomeTabPage.detailsholder.dashboard.Server
+
+		if not serverPanel then
+			return
+		end
+
+		local preservedCards = {}
+
+		for _, child in ipairs(serverPanel:GetChildren()) do
+			if child:IsA("UIGridStyleLayout") then
+				child:Destroy()
+			elseif child:IsA("Frame") then
+				local titleLabel = child:FindFirstChild("Title")
+				local shouldRemove = false
+
+				local childName = string.lower(child.Name or "")
+				if childName:find("join") then
+					shouldRemove = true
+				end
+
+				if titleLabel and titleLabel:IsA("TextLabel") then
+					local titleText = string.lower(titleLabel.Text or "")
+					if titleText:find("join") then
+						shouldRemove = true
+					end
+				end
+
+				if shouldRemove then
+					child:Destroy()
+				else
+					table.insert(preservedCards, child)
+				end
+			end
+		end
+
+		local layout = serverPanel:FindFirstChild("ServerListLayout")
+		if not layout then
+			layout = Instance.new("UIListLayout")
+			layout.Name = "ServerListLayout"
+			layout.SortOrder = Enum.SortOrder.LayoutOrder
+			layout.FillDirection = Enum.FillDirection.Vertical
+			layout.HorizontalAlignment = Enum.HorizontalAlignment.Stretch
+			layout.Padding = UDim.new(0, 8)
+			layout.Parent = serverPanel
+		end
+
+		for index, card in ipairs(preservedCards) do
+			if card.Parent == serverPanel then
+				card.LayoutOrder = index
+				card.Size = UDim2.new(1, 0, card.Size.Y.Scale, card.Size.Y.Offset)
+			end
+		end
+	end
+
+	configureServerPanel()
 
 	function HomeTab:Activate()
 		tween(HomeTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
@@ -172,7 +234,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local refreshTimer = 0
 
 	while task.wait(0.5) do
-		-- Serverinformationen aktualisieren
+		-- 🧭 Serverinformationen aktualisieren
 		HomeTabPage.detailsholder.dashboard.Server.Players.Value.Text = #Players:GetPlayers() .. " playing"
 		HomeTabPage.detailsholder.dashboard.Server.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
 
@@ -183,7 +245,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
 		HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
 
-		-- Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
+		-- 🕒 Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
 		if refreshTimer <= 0 then
 			task.spawn(function()
 				local ok, err = pcall(checkFriends)
