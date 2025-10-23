@@ -34,8 +34,9 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
-local Release = "Closed Beta [v 0.2]"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Unstable/New/"
+
+local Release = "Closed Beta [v 0.1]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
@@ -270,6 +271,11 @@ local function ensureGuiBlur(guiObject)
 	folder.Parent = root
 
 	local parents = {}
+	local lastAbsPos
+	local lastAbsSize
+	local lastRotSum
+	local lastCameraCFrame
+	local lastCameraFov
 	local function addAncestor(child)
 		if child:IsA("GuiObject") then
 			parents[#parents + 1] = child
@@ -357,17 +363,38 @@ local function ensureGuiBlur(guiObject)
 	end
 
 	local function updateOrientation(fetchProps)
-		local zIndex = 1 - 0.05 * wrapper.ZIndex
-
-		local tl = wrapper.AbsolutePosition
-		local br = wrapper.AbsolutePosition + wrapper.AbsoluteSize
-        local tr = Vector2.new(br.X, tl.Y)
-        local bl = Vector2.new(tl.X, br.Y)
+		local absPos = wrapper.AbsolutePosition
+		local absSize = wrapper.AbsoluteSize
+		local cameraCFrame = camera.CFrame
+		local cameraFov = camera.FieldOfView
 
 		local rot = 0
 		for _, ancestor in ipairs(parents) do
 			rot = rot + ancestor.Rotation
 		end
+		if not fetchProps
+			and lastAbsPos
+			and lastAbsPos == absPos
+			and lastAbsSize == absSize
+			and rot == lastRotSum
+			and cameraCFrame == lastCameraCFrame
+			and cameraFov == lastCameraFov then
+			return
+		end
+
+		lastAbsPos = absPos
+		lastAbsSize = absSize
+		lastRotSum = rot
+		lastCameraCFrame = cameraCFrame
+		lastCameraFov = cameraFov
+
+		local zIndex = 1 - 0.05 * wrapper.ZIndex
+
+		local tl = absPos
+		local br = absPos + absSize
+		local tr = Vector2.new(br.X, tl.Y)
+		local bl = Vector2.new(tl.X, br.Y)
+
 		if rot ~= 0 and rot % 180 ~= 0 then
 			local mid = tl:Lerp(br, 0.5)
 			local s = math.sin(math.rad(rot))
@@ -1099,18 +1126,20 @@ function Aurexis:CreateWindow(WindowSettings)
 
 	local FirstTab = true
 
--- HomeTab START
+---------------------------------------------------------------- -- HomeTab START
 	
 -- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
+print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
+
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
+-- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
 Window:CreateHomeTab()
+
 FirstTab = false
 
--- HomeTab END
-
-	
+---------------------------------------------------------------- -- HomeTab END
 -- Stolen From Sirius Stuff ends here
 
 	function Window:CreateTab(TabSettings)
