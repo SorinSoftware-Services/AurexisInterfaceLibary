@@ -34,7 +34,7 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Unstable/New/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
 local Release = "Closed Beta [v 0.1]"
 
@@ -1144,8 +1144,6 @@ function Aurexis:CreateWindow(WindowSettings)
 	
 -- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
-print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
-
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
 -- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
