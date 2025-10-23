@@ -289,30 +289,6 @@ local function ensureGuiBlur(guiObject)
 	local acos, max, pi, sqrt = math.acos, math.max, math.pi, math.sqrt
 	local sz = 0.22
 
-	local function prepareWedge(part)
-		if not part or not part:IsA("BasePart") then
-			part = Instance.new("Part")
-			part.FormFactor = Enum.FormFactor.Custom
-			part.TopSurface = Enum.SurfaceType.Smooth
-			part.BottomSurface = Enum.SurfaceType.Smooth
-			part.Anchored = true
-			part.CanCollide = false
-			part.CastShadow = false
-			part.Material = Enum.Material.Glass
-			part.Size = Vector3.new(sz, sz, sz)
-		end
-
-		local mesh = part:FindFirstChild("WedgeMesh")
-		if not mesh then
-			mesh = Instance.new("SpecialMesh")
-			mesh.MeshType = Enum.MeshType.Wedge
-			mesh.Name = "WedgeMesh"
-			mesh.Parent = part
-		end
-
-		return part, mesh
-	end
-
 	local function drawTriangle(v1, v2, v3, p0, p1)
 		local s1 = (v1 - v2).Magnitude
 		local s2 = (v2 - v3).Magnitude
@@ -354,18 +330,28 @@ local function ensureGuiBlur(guiObject)
 		end
 		cf1 = cf1 * CFrame.new(0, perp/2, dif_para/2)
 
-		local mesh0
-		p0, mesh0 = prepareWedge(p0)
-		mesh0.Scale = Vector3.new(0, perp/sz, para/sz)
+		if not p0 then
+			p0 = Instance.new("Part")
+			p0.FormFactor = Enum.FormFactor.Custom
+			p0.TopSurface = Enum.SurfaceType.Smooth
+			p0.BottomSurface = Enum.SurfaceType.Smooth
+			p0.Anchored = true
+			p0.CanCollide = false
+			p0.CastShadow = false
+			p0.Material = Enum.Material.Glass
+			p0.Size = Vector3.new(sz, sz, sz)
+			local mesh = Instance.new("SpecialMesh")
+			mesh.MeshType = Enum.MeshType.Wedge
+			mesh.Name = "WedgeMesh"
+			mesh.Parent = p0
+		end
+		p0.WedgeMesh.Scale = Vector3.new(0, perp/sz, para/sz)
 		p0.CFrame = cf0
 
-		local mesh1
 		if not p1 then
 			p1 = p0:Clone()
-			mesh1 = p1:FindFirstChild("WedgeMesh")
 		end
-		p1, mesh1 = prepareWedge(p1)
-		mesh1.Scale = Vector3.new(0, perp/sz, dif_para/sz)
+		p1.WedgeMesh.Scale = Vector3.new(0, perp/sz, dif_para/sz)
 		p1.CFrame = cf1
 
 		return p0, p1
@@ -1144,6 +1130,8 @@ function Aurexis:CreateWindow(WindowSettings)
 	
 -- HomeTab laden und registrieren
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
+print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
+
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
 -- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
