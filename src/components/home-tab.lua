@@ -74,7 +74,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			layout.Name = "ServerListLayout"
 			layout.SortOrder = Enum.SortOrder.LayoutOrder
 			layout.FillDirection = Enum.FillDirection.Vertical
-			layout.HorizontalAlignment = Enum.HorizontalAlignment.Stretch
+			layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+			layout.VerticalAlignment = Enum.VerticalAlignment.Top
 			layout.Padding = UDim.new(0, 8)
 			layout.Parent = serverPanel
 		end
