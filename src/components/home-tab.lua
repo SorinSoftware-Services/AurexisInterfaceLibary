@@ -1,5 +1,4 @@
 -- src/components/home-tab.lua
-print("[Aurexis] HomeTab module loaded successfully")
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -27,44 +26,72 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	local HomeTabPage = Elements.Home
 	HomeTabPage.Visible = true
+	local serverPanel = HomeTabPage
+		and HomeTabPage.detailsholder
+		and HomeTabPage.detailsholder.dashboard
+		and HomeTabPage.detailsholder.dashboard.Server
 
 	-- Normalize the server stats panel: drop legacy "Join Script" tile and stack remaining cards vertically.
 	local function configureServerPanel()
-		local serverPanel = HomeTabPage
-			and HomeTabPage.detailsholder
-			and HomeTabPage.detailsholder.dashboard
-			and HomeTabPage.detailsholder.dashboard.Server
-
 		if not serverPanel then
 			return
 		end
 
 		local preservedCards = {}
+		local removalTargets = {}
+
+		local function markForRemoval(candidate)
+			if not candidate then
+				return
+			end
+			if candidate.Parent == serverPanel and candidate:IsA("Frame") then
+				removalTargets[candidate] = true
+			else
+				local ancestor = candidate:FindFirstAncestorWhichIsA("Frame")
+				while ancestor and ancestor.Parent ~= serverPanel do
+					ancestor = ancestor.Parent
+				end
+				if ancestor and ancestor:IsA("Frame") and ancestor.Parent == serverPanel then
+					removalTargets[ancestor] = true
+				end
+			end
+		end
+
+		for _, descendant in ipairs(serverPanel:GetDescendants()) do
+			if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
+				local text = string.lower(descendant.Text or "")
+				if text:find("join") then
+					markForRemoval(descendant)
+				end
+			end
+		end
 
 		for _, child in ipairs(serverPanel:GetChildren()) do
 			if child:IsA("UIGridStyleLayout") then
 				child:Destroy()
 			elseif child:IsA("Frame") then
-				local titleLabel = child:FindFirstChild("Title")
-				local shouldRemove = false
-
 				local childName = string.lower(child.Name or "")
 				if childName:find("join") then
-					shouldRemove = true
-				end
-
-				if titleLabel and titleLabel:IsA("TextLabel") then
-					local titleText = string.lower(titleLabel.Text or "")
-					if titleText:find("join") then
-						shouldRemove = true
+					removalTargets[child] = true
+				else
+					local titleLabel = child:FindFirstChild("Title")
+					if titleLabel and titleLabel:IsA("TextLabel") then
+						local titleText = string.lower(titleLabel.Text or "")
+						if titleText:find("join") then
+							removalTargets[child] = true
+						end
 					end
 				end
+			end
+		end
 
-				if shouldRemove then
-					child:Destroy()
-				else
-					table.insert(preservedCards, child)
-				end
+		for card in pairs(removalTargets) do
+			card:Destroy()
+		end
+
+		for _, child in ipairs(serverPanel:GetChildren()) do
+			if child:IsA("Frame") then
+				table.insert(preservedCards, child)
 			end
 		end
 
@@ -89,6 +116,29 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	end
 
 	configureServerPanel()
+	if serverPanel then
+		serverPanel.DescendantAdded:Connect(function(obj)
+			if not obj then
+				return
+			end
+			if obj:IsA("UIGridStyleLayout") then
+				task.defer(configureServerPanel)
+				return
+			end
+			if obj:IsA("Frame") then
+				if string.find(string.lower(obj.Name or ""), "join") then
+					task.defer(configureServerPanel)
+					return
+				end
+			end
+			if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+				local text = string.lower(obj.Text or "")
+				if text:find("join") then
+					task.defer(configureServerPanel)
+				end
+			end
+		end)
+	end
 
 	function HomeTab:Activate()
 		tween(HomeTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
@@ -118,7 +168,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	-- === UI SETUP ===
 	HomeTabPage.icon.ImageLabel.Image = Players:GetUserThumbnailAsync(Players.LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-	HomeTabPage.player.Text.Text = "Hello, " .. Players.LocalPlayer.DisplayName
 	HomeTabPage.player.user.RichText = true
 	HomeTabPage.player.user.Text = "You are using <b>" .. Release .. "</b>"
 
@@ -172,6 +221,26 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	-- === FRIENDS / STATS HANDLING ===
 	local Player = Players.LocalPlayer
+	local function getGreeting()
+		local success, now = pcall(os.date, "*t")
+		if not success or not now or not now.hour then
+			return "Hello"
+		end
+
+		local hour = now.hour
+		if hour >= 5 and hour < 12 then
+			return "Good morning"
+		elseif hour >= 12 and hour < 18 then
+			return "Good afternoon"
+		elseif hour >= 18 and hour < 22 then
+			return "Good evening"
+		else
+			return "Good night"
+		end
+	end
+
+	local greeting = getGreeting()
+	HomeTabPage.player.Text.Text = string.format("%s, %s", greeting, Players.LocalPlayer.DisplayName)
 	local friendsCooldown = 0
 	local Localization = game:GetService("LocalizationService")
 
