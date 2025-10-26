@@ -32,7 +32,7 @@ by Nebula Softworks
 
 ]]
 
-print("Developer Update 01")
+
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
@@ -650,11 +650,14 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 		coreTransparency = 0.25,
 	}
 
+	local sizeMultiplier = 0.78
+	local spinnerBaseSize = scaleUDim2(baseImageLabel.Size, sizeMultiplier)
+
 	local container = Instance.new("Frame")
 	container.Name = "LayeredSpinner"
 	container.AnchorPoint = baseImageLabel.AnchorPoint
 	container.Position = baseImageLabel.Position
-	container.Size = baseImageLabel.Size
+	container.Size = spinnerBaseSize
 	container.BackgroundTransparency = 1
 	container.ZIndex = baseImageLabel.ZIndex
 	container.LayoutOrder = baseImageLabel.LayoutOrder
@@ -673,9 +676,9 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 	end
 
 	local ringPalette = {
-		Color3.fromRGB(183, 218, 255),
-		Color3.fromRGB(143, 201, 255),
-		Color3.fromRGB(91, 163, 232)
+		Color3.fromRGB(205, 233, 255),
+		Color3.fromRGB(176, 217, 255),
+		Color3.fromRGB(148, 197, 255)
 	}
 
 	local ringConfigs = {
@@ -689,7 +692,7 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 		ring.Name = "Ring_" .. index
 		ring.AnchorPoint = Vector2.new(0.5, 0.5)
 		ring.Position = UDim2.fromScale(0.5, 0.5)
-		ring.Size = scaleUDim2(baseImageLabel.Size, config.scale)
+		ring.Size = scaleUDim2(spinnerBaseSize, config.scale)
 		ring.BackgroundTransparency = 1
 		ring.ZIndex = container.ZIndex + index
 		ring.Parent = container
@@ -729,8 +732,8 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 	core.Name = "Core"
 	core.AnchorPoint = Vector2.new(0.5, 0.5)
 	core.Position = UDim2.fromScale(0.5, 0.5)
-	core.Size = scaleUDim2(baseImageLabel.Size, 0.2)
-	core.BackgroundColor3 = Color3.fromRGB(210, 234, 255)
+	core.Size = scaleUDim2(spinnerBaseSize, 0.25)
+	core.BackgroundColor3 = Color3.fromRGB(236, 247, 255)
 	core.BackgroundTransparency = 1
 	core.ZIndex = container.ZIndex + 5
 	core.Parent = container
@@ -742,7 +745,7 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 	local coreStroke = Instance.new("UIStroke")
 	coreStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	coreStroke.Thickness = 1.5
-	coreStroke.Color = Color3.fromRGB(143, 201, 255)
+	coreStroke.Color = Color3.fromRGB(186, 220, 255)
 	coreStroke.Transparency = 1
 	coreStroke.Parent = core
 
