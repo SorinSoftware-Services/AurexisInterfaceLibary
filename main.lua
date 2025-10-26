@@ -707,12 +707,12 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 		stroke.Parent = ring
 
 		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new(
+		gradient.Color = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
 			ColorSequenceKeypoint.new(0.3, config.color),
 			ColorSequenceKeypoint.new(0.75, lighten(config.color, 0.55)),
 			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-		)
+		})
 		gradient.Rotation = config.gradientRotation or 0
 		gradient.Parent = stroke
 
