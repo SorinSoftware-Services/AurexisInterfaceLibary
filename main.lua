@@ -36,7 +36,7 @@ by Nebula Softworks
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
-local Release = "Closed Beta [v 0.1]"
+local Release = "Pre Release [v 0.2]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
@@ -626,6 +626,167 @@ local dragBarCosmetic = dragBar and dragBar.Drag or nil
 local Elements = Main.Elements.Interactions
 local LoadingFrame = Main.LoadingFrame
 local Navigation = Main.Navigation
+
+local function scaleUDim2(size: UDim2, multiplier: number): UDim2
+	return UDim2.new(
+		size.X.Scale * multiplier,
+		math.floor(size.X.Offset * multiplier),
+		size.Y.Scale * multiplier,
+		math.floor(size.Y.Offset * multiplier)
+	)
+end
+
+local function createLayeredSpinner(baseImageLabel: ImageLabel?)
+	if not baseImageLabel or not baseImageLabel.Parent then
+		return nil
+	end
+
+	if not baseImageLabel:IsA("ImageLabel") then
+		return nil
+	end
+
+	local spinner = {
+		layers = {},
+		coreTransparency = 0.25,
+	}
+
+	local container = Instance.new("Frame")
+	container.Name = "LayeredSpinner"
+	container.AnchorPoint = baseImageLabel.AnchorPoint
+	container.Position = baseImageLabel.Position
+	container.Size = baseImageLabel.Size
+	container.BackgroundTransparency = 1
+	container.ZIndex = baseImageLabel.ZIndex
+	container.LayoutOrder = baseImageLabel.LayoutOrder
+	container.Parent = baseImageLabel.Parent
+	container.Visible = true
+
+	baseImageLabel.Visible = false
+
+	local function lighten(color: Color3, amount: number): Color3
+		local alpha = math.clamp(amount or 0, 0, 1)
+		return Color3.new(
+			color.R + (1 - color.R) * alpha,
+			color.G + (1 - color.G) * alpha,
+			color.B + (1 - color.B) * alpha
+		)
+	end
+
+	local ringPalette = {
+		Color3.fromRGB(183, 218, 255),
+		Color3.fromRGB(143, 201, 255),
+		Color3.fromRGB(91, 163, 232)
+	}
+
+	local ringConfigs = {
+		{scale = 1, thickness = 6, speed = 120, direction = 1, color = ringPalette[1], gradientRotation = 5, targetTransparency = 0.08},
+		{scale = 0.78, thickness = 5, speed = 180, direction = -1, color = ringPalette[2], gradientRotation = -15, targetTransparency = 0.05},
+		{scale = 0.52, thickness = 4, speed = 240, direction = 1, color = ringPalette[3], gradientRotation = 35, targetTransparency = 0}
+	}
+
+	for index, config in ipairs(ringConfigs) do
+		local ring = Instance.new("Frame")
+		ring.Name = "Ring_" .. index
+		ring.AnchorPoint = Vector2.new(0.5, 0.5)
+		ring.Position = UDim2.fromScale(0.5, 0.5)
+		ring.Size = scaleUDim2(baseImageLabel.Size, config.scale)
+		ring.BackgroundTransparency = 1
+		ring.ZIndex = container.ZIndex + index
+		ring.Parent = container
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(1, 0)
+		corner.Parent = ring
+
+		local stroke = Instance.new("UIStroke")
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.LineJoinMode = Enum.LineJoinMode.Round
+		stroke.Color = config.color
+		stroke.Thickness = config.thickness
+		stroke.Transparency = 1
+		stroke.Parent = ring
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Color = ColorSequence.new(
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(0.3, config.color),
+			ColorSequenceKeypoint.new(0.75, lighten(config.color, 0.55)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+		)
+		gradient.Rotation = config.gradientRotation or 0
+		gradient.Parent = stroke
+
+		table.insert(spinner.layers, {
+			gui = ring,
+			stroke = stroke,
+			speed = config.speed,
+			direction = config.direction,
+			targetTransparency = config.targetTransparency or 0
+		})
+	end
+
+	local core = Instance.new("Frame")
+	core.Name = "Core"
+	core.AnchorPoint = Vector2.new(0.5, 0.5)
+	core.Position = UDim2.fromScale(0.5, 0.5)
+	core.Size = scaleUDim2(baseImageLabel.Size, 0.2)
+	core.BackgroundColor3 = Color3.fromRGB(210, 234, 255)
+	core.BackgroundTransparency = 1
+	core.ZIndex = container.ZIndex + 5
+	core.Parent = container
+
+	local coreCorner = Instance.new("UICorner")
+	coreCorner.CornerRadius = UDim.new(1, 0)
+	coreCorner.Parent = core
+
+	local coreStroke = Instance.new("UIStroke")
+	coreStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	coreStroke.Thickness = 1.5
+	coreStroke.Color = Color3.fromRGB(143, 201, 255)
+	coreStroke.Transparency = 1
+	coreStroke.Parent = core
+
+	spinner.container = container
+	spinner.core = core
+	spinner.coreStroke = coreStroke
+
+	function spinner:SetVisible(isVisible, info)
+		local tweenInfo = info or TweenInfo.new(0.35, Enum.EasingStyle.Exponential)
+		for _, layer in ipairs(self.layers) do
+			local target = isVisible and layer.targetTransparency or 1
+			TweenService:Create(layer.stroke, tweenInfo, {Transparency = target}):Play()
+		end
+		if self.core then
+			TweenService:Create(self.core, tweenInfo, {BackgroundTransparency = isVisible and self.coreTransparency or 1}):Play()
+		end
+		if self.coreStroke then
+			TweenService:Create(self.coreStroke, tweenInfo, {Transparency = isVisible and 0.35 or 1}):Play()
+		end
+	end
+
+	function spinner:Start()
+		if self.renderConnection then
+			return
+		end
+		self.renderConnection = RunService.RenderStepped:Connect(function(dt)
+			for _, layer in ipairs(self.layers) do
+				local delta = dt * layer.speed * layer.direction
+				layer.gui.Rotation = (layer.gui.Rotation + delta) % 360
+			end
+		end)
+	end
+
+	function spinner:Stop()
+		if self.renderConnection then
+			self.renderConnection:Disconnect()
+			self.renderConnection = nil
+		end
+	end
+
+	return spinner
+end
+
+local LayeredLoadingSpinner = createLayeredSpinner(LoadingFrame and LoadingFrame.Frame and LoadingFrame.Frame:FindFirstChild("ImageLabel"))
 local Tabs = Navigation.Tabs
 local Notifications = AurexisUI.Notifications
 local KeySystem : Frame = Main.KeySystem
@@ -853,7 +1014,7 @@ function Aurexis:CreateWindow(WindowSettings)
 
 	WindowSettings = Kwargify({
 		Name = "AurexisHub UI",
-		Subtitle = "Credits NebulaSoftworks",
+		Subtitle = "Credits: LunaInterfaceSuite",
 		LogoID = "77656423525793",
 		LoadingEnabled = true,
 		LoadingTitle = "Aurexis Interface Library",
@@ -1085,21 +1246,33 @@ function Aurexis:CreateWindow(WindowSettings)
 
 	if WindowSettings.LoadingEnabled then
 		task.wait(0.3)
+		local fadeTween = TweenInfo.new(0.35, Enum.EasingStyle.Exponential)
 		TweenService:Create(LoadingFrame.Frame.Frame.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-		TweenService:Create(LoadingFrame.Frame.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
+		TweenService:Create(LoadingFrame.Version, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
+		if LayeredLoadingSpinner then
+			LayeredLoadingSpinner:SetVisible(true, fadeTween)
+			LayeredLoadingSpinner:Start()
+		else
+			TweenService:Create(LoadingFrame.Frame.ImageLabel, fadeTween, {ImageTransparency = 0}):Play()
+			TweenService:Create(LoadingFrame.Frame.ImageLabel, TweenInfo.new(1.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 2, false, 0.2), {Rotation = 450}):Play()
+		end
 		task.wait(0.05)
 		TweenService:Create(LoadingFrame.Frame.Frame.Subtitle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-		TweenService:Create(LoadingFrame.Version, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 0}):Play()
-		task.wait(0.29)
-		TweenService:Create(LoadingFrame.Frame.ImageLabel, TweenInfo.new(1.7, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 2, false, 0.2), {Rotation = 450}):Play()
 
 		task.wait(3.32)
 
 		TweenService:Create(LoadingFrame.Frame.Frame.Title, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
-		TweenService:Create(LoadingFrame.Frame.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+		if LayeredLoadingSpinner then
+			LayeredLoadingSpinner:SetVisible(false, fadeTween)
+		else
+			TweenService:Create(LoadingFrame.Frame.ImageLabel, fadeTween, {ImageTransparency = 1}):Play()
+		end
 		task.wait(0.05)
 		TweenService:Create(LoadingFrame.Frame.Frame.Subtitle, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
 		TweenService:Create(LoadingFrame.Version, TweenInfo.new(0.7, Enum.EasingStyle.Exponential), {TextTransparency = 1}):Play()
+		if LayeredLoadingSpinner then
+			LayeredLoadingSpinner:Stop()
+		end
 		wait(0.3)
 		TweenService:Create(LoadingFrame, TweenInfo.new(0.5, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {BackgroundTransparency = 1}):Play()
 	end
