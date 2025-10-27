@@ -1466,6 +1466,30 @@ FirstTab = false
 			isStudio = isStudio,
 		})
 
+		if not Aurexis.DefaultThemeApplied then
+			local picker1 = Aurexis.Options["AurexisInterfaceSuitePrebuiltCPC1"]
+			local picker2 = Aurexis.Options["AurexisInterfaceSuitePrebuiltCPC2"]
+			local picker3 = Aurexis.Options["AurexisInterfaceSuitePrebuiltCPC3"]
+
+			if picker1 and picker2 and picker3 and picker1.Set and picker2.Set and picker3.Set then
+				local color1 = Color3.fromRGB(173, 216, 255)
+				local color2 = Color3.fromRGB(100, 149, 237)
+				local color3 = Color3.fromRGB(195, 144, 255)
+
+				Aurexis.ThemeGradient = ColorSequence.new{
+					ColorSequenceKeypoint.new(0.00, color1),
+					ColorSequenceKeypoint.new(0.50, color2),
+					ColorSequenceKeypoint.new(1.00, color3)
+				}
+
+				picker1:Set({ Color = color1 })
+				picker2:Set({ Color = color2 })
+				picker3:Set({ Color = color3 })
+
+				Aurexis.DefaultThemeApplied = true
+			end
+		end
+
 		return Tab
 	end
 
