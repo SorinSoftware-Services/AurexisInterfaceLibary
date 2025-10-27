@@ -42,9 +42,9 @@ local Aurexis = {
 	Folder = "AurexisLibrary UI", 
 	Options = {}, 
 	ThemeGradient = ColorSequence.new{
-		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(146, 103, 255)),
-		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(181, 122, 255)),
-		ColorSequenceKeypoint.new(1.00, Color3.fromRGB(215, 159, 255))
+		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(173, 216, 255)), -- baby blue
+		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(100, 149, 237)), -- medium blue
+		ColorSequenceKeypoint.new(1.00, Color3.fromRGB(195, 144, 255))  -- lilac
 	} 
 }
 
@@ -89,7 +89,7 @@ local request = (syn and syn.request) or (http and http.request) or http_request
 local tweeninfo = TweenInfo.new(0.3, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 local PresetGradients = {
 	["Nightlight (Classic)"] = {Color3.fromRGB(147, 255, 239), Color3.fromRGB(201,211,233), Color3.fromRGB(255, 167, 227)},
-	["Nightlight (Neo)"] = {Color3.fromRGB(117, 164, 206), Color3.fromRGB(123, 201, 201), Color3.fromRGB(224, 138, 175)},
+	["Nightlight (Neo)"] = {Color3.fromRGB(173, 216, 255), Color3.fromRGB(100, 149, 237), Color3.fromRGB(195, 144, 255)},
 	Starlight = {Color3.fromRGB(147, 255, 239), Color3.fromRGB(181, 206, 241), Color3.fromRGB(214, 158, 243)},
 	Solar = {Color3.fromRGB(242, 157, 76), Color3.fromRGB(240, 179, 81), Color3.fromRGB(238, 201, 86)},
 	Sparkle = {Color3.fromRGB(199, 130, 242), Color3.fromRGB(221, 130, 238), Color3.fromRGB(243, 129, 233)},
@@ -1312,6 +1312,8 @@ function Aurexis:CreateWindow(WindowSettings)
 local HomeTabModule = requireRemote("src/components/home-tab.lua")
 local attachSectionControls = requireRemote("src/components/section-controls.lua")
 local attachTabControls = requireRemote("src/components/tab-controls.lua")
+print("[Aurexis] HomeTab module loaded:", type(HomeTabModule))
+
 HomeTabModule(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
 
 -- HomeTab jetzt ERSTELLEN (sonst bleibt alles leer)
