@@ -2078,17 +2078,17 @@ function Tab:BuildThemeSection()
 
 	local c1cp = Tab:CreateColorPicker({
 		Name = "Color 1",
-		Color = Color3.fromRGB(173, 216, 255),
+		Color = Color3.fromRGB(0, 255, 204),
 	}, "AurexisInterfaceSuitePrebuiltCPC1") -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
 
 	local c2cp = Tab:CreateColorPicker({
 		Name = "Color 2",
-		Color = Color3.fromRGB(100, 149, 237),
+		Color = Color3.fromRGB(0, 179, 255),
 	}, "AurexisInterfaceSuitePrebuiltCPC2")
 
 	local c3cp = Tab:CreateColorPicker({
 		Name = "Color 3",
-		Color = Color3.fromRGB(195, 144, 255),
+		Color = Color3.fromRGB(200, 0, 255),
 	}, "AurexisInterfaceSuitePrebuiltCPC3") 
 
 	task.wait(1)
