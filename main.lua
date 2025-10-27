@@ -654,7 +654,7 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 		coreTransparency = 0.25,
 	}
 
-	local sizeMultiplier = 0.78
+	local sizeMultiplier = 0.65
 	local spinnerBaseSize = scaleUDim2(baseImageLabel.Size, sizeMultiplier)
 
 	local container = Instance.new("Frame")
@@ -680,15 +680,21 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 	end
 
 	local ringPalette = {
-		Color3.fromRGB(205, 233, 255),
-		Color3.fromRGB(176, 217, 255),
-		Color3.fromRGB(148, 197, 255)
+		Color3.fromRGB(190, 225, 255),
+		Color3.fromRGB(162, 205, 255),
+		Color3.fromRGB(134, 185, 255)
+	}
+
+	local accentPalette = {
+		Color3.fromRGB(195, 144, 255),
+		Color3.fromRGB(182, 130, 255),
+		Color3.fromRGB(205, 170, 255)
 	}
 
 	local ringConfigs = {
-		{scale = 1, thickness = 6, speed = 120, direction = 1, color = ringPalette[1], gradientRotation = 5, targetTransparency = 0.08},
-		{scale = 0.78, thickness = 5, speed = 180, direction = -1, color = ringPalette[2], gradientRotation = -15, targetTransparency = 0.05},
-		{scale = 0.52, thickness = 4, speed = 240, direction = 1, color = ringPalette[3], gradientRotation = 35, targetTransparency = 0}
+		{scale = 1, thickness = 5, speed = 120, direction = 1, color = ringPalette[1], accentColor = accentPalette[1], gradientRotation = 5, targetTransparency = 0.08},
+		{scale = 0.78, thickness = 4, speed = 180, direction = -1, color = ringPalette[2], accentColor = accentPalette[2], gradientRotation = -15, targetTransparency = 0.05},
+		{scale = 0.52, thickness = 3, speed = 240, direction = 1, color = ringPalette[3], accentColor = accentPalette[3], gradientRotation = 35, targetTransparency = 0}
 	}
 
 	for index, config in ipairs(ringConfigs) do
@@ -714,11 +720,12 @@ local function createLayeredSpinner(baseImageLabel: ImageLabel?)
 		stroke.Parent = ring
 
 		local gradient = Instance.new("UIGradient")
+		local accentColor = config.accentColor or config.color
 		gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(0.3, config.color),
-			ColorSequenceKeypoint.new(0.75, lighten(config.color, 0.55)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+			ColorSequenceKeypoint.new(0, lighten(config.color, 0.25)),
+			ColorSequenceKeypoint.new(0.45, config.color),
+			ColorSequenceKeypoint.new(0.8, accentColor),
+			ColorSequenceKeypoint.new(1, lighten(accentColor, 0.4))
 		})
 		gradient.Rotation = config.gradientRotation or 0
 		gradient.Parent = stroke
