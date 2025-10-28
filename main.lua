@@ -1029,7 +1029,7 @@ function Aurexis:CreateWindow(WindowSettings)
 	WindowSettings = Kwargify({
 		Name = "AurexisHub UI",
 		Subtitle = "Credits: LunaInterfaceSuite",
-		LogoID = "77656423525793",
+		LogoID = "81883809791714",
 		LoadingEnabled = true,
 		LoadingTitle = "Aurexis Interface Library",
 		LoadingSubtitle = "by SorinSoftware Services",
