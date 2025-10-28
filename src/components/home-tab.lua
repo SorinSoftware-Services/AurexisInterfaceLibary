@@ -88,7 +88,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			message = "Good Executor. I think u can use all Scripts here."
 		elseif table.find(HomeTabSettings.BadExecutors, exec) then
 			color = Color3.fromRGB(255, 180, 50)
-			message = "Bad Exec :( Scripts my be not Supported"
+			message = "Bad Exec :( | Scripts my be not Supported"
 		elseif table.find(HomeTabSettings.DetectedExecutors, exec) then
 			color = Color3.fromRGB(255, 60, 60)
 			message = "This executor is detected. Why the shit would you use this?!"
