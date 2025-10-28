@@ -34,7 +34,7 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
 local Release = "Pre Release [v 0.2]"
 
@@ -344,17 +344,31 @@ local function ensureGuiBlur(guiObject)
 			p0.CastShadow = false
 			p0.Material = Enum.Material.Glass
 			p0.Size = Vector3.new(sz, sz, sz)
-			local mesh = Instance.new("SpecialMesh")
-			mesh.MeshType = Enum.MeshType.Wedge
-			mesh.Name = "WedgeMesh"
-			mesh.Parent = p0
 		end
+
+		local mesh0 = p0:FindFirstChild("WedgeMesh")
+		if not mesh0 then
+			mesh0 = Instance.new("SpecialMesh")
+			mesh0.MeshType = Enum.MeshType.Wedge
+			mesh0.Name = "WedgeMesh"
+			mesh0.Parent = p0
+		end
+
 		p0.WedgeMesh.Scale = Vector3.new(0, perp/sz, para/sz)
 		p0.CFrame = cf0
 
 		if not p1 then
 			p1 = p0:Clone()
 		end
+
+		local mesh1 = p1:FindFirstChild("WedgeMesh")
+		if not mesh1 then
+			mesh1 = Instance.new("SpecialMesh")
+			mesh1.MeshType = Enum.MeshType.Wedge
+			mesh1.Name = "WedgeMesh"
+			mesh1.Parent = p1
+		end
+
 		p1.WedgeMesh.Scale = Vector3.new(0, perp/sz, dif_para/sz)
 		p1.CFrame = cf1
 
@@ -1029,7 +1043,7 @@ function Aurexis:CreateWindow(WindowSettings)
 	WindowSettings = Kwargify({
 		Name = "AurexisHub UI",
 		Subtitle = "Credits: LunaInterfaceSuite",
-		LogoID = "81883809791714",
+		LogoID = "77656423525793",
 		LoadingEnabled = true,
 		LoadingTitle = "Aurexis Interface Library",
 		LoadingSubtitle = "by SorinSoftware Services",
