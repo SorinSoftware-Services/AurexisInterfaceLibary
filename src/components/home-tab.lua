@@ -195,6 +195,191 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		return format(Hours) .. ":" .. format(Minutes) .. ":" .. format(Seconds)
 	end
 
+	local diagnosticsCard
+	local diagnosticsDefaults = {}
+	local diagnosticsStatusSignature
+
+	local diagnosticsStyles = {
+		clear = {
+			label = "All clear - no performance issues detected.",
+			valueColor = Color3.fromRGB(120, 255, 150),
+			strokeColor = Color3.fromRGB(120, 255, 150),
+			strokeTransparency = 0.35,
+		},
+		pending = {
+			label = "Sending diagnostics to backend ...",
+			valueColor = Color3.fromRGB(255, 205, 90),
+			strokeColor = Color3.fromRGB(255, 205, 90),
+			strokeTransparency = 0.25,
+		},
+		issues = {
+			valueColor = Color3.fromRGB(255, 170, 95),
+			strokeColor = Color3.fromRGB(255, 170, 95),
+			strokeTransparency = 0.2,
+		},
+		error = {
+			valueColor = Color3.fromRGB(255, 110, 110),
+			strokeColor = Color3.fromRGB(255, 110, 110),
+			strokeTransparency = 0.2,
+		},
+	}
+
+	local function getBackendStatus()
+		local status = Window and Window.PerformanceBackendStatus
+		if typeof(status) == "table" then
+			return status
+		end
+		return {
+			state = "clear",
+			summary = nil,
+			lastUpdated = nil,
+			error = nil,
+		}
+	end
+
+	local function ensureDiagnosticsCard(serverInfo)
+		if diagnosticsCard and diagnosticsCard.Parent == serverInfo then
+			return true
+		end
+
+		diagnosticsCard = nil
+		if not serverInfo then
+			return false
+		end
+
+		local candidates = {"Diagnostics", "JoinScript", "Join", "JoinInfo"}
+		for _, name in ipairs(candidates) do
+			local candidate = serverInfo:FindFirstChild(name)
+			if candidate and candidate:IsA("Frame") then
+				diagnosticsCard = candidate
+				break
+			end
+		end
+
+		if not diagnosticsCard then
+			return false
+		end
+
+		diagnosticsStatusSignature = nil
+
+		diagnosticsDefaults = {
+			background = diagnosticsCard.BackgroundColor3,
+			titleColor = nil,
+			valueColor = nil,
+			strokeColor = nil,
+			strokeTransparency = nil,
+		}
+
+		local titleLabel = diagnosticsCard:FindFirstChild("Title")
+		if titleLabel and titleLabel:IsA("TextLabel") then
+			diagnosticsDefaults.titleColor = titleLabel.TextColor3
+			titleLabel.Text = "Diagnostics"
+			titleLabel.RichText = false
+		end
+
+		local valueLabel = diagnosticsCard:FindFirstChild("Value")
+		if valueLabel and valueLabel:IsA("TextLabel") then
+			diagnosticsDefaults.valueColor = valueLabel.TextColor3
+			valueLabel.TextWrapped = true
+			valueLabel.RichText = false
+			valueLabel.Text = "Clear"
+		end
+
+		local uiStroke = diagnosticsCard:FindFirstChildWhichIsA("UIStroke")
+		if uiStroke then
+			diagnosticsDefaults.strokeColor = uiStroke.Color
+			diagnosticsDefaults.strokeTransparency = uiStroke.Transparency
+		end
+
+		local interact = diagnosticsCard:FindFirstChild("Interact")
+		if interact and interact:IsA("GuiButton") then
+			interact.AutoButtonColor = false
+			interact.Active = false
+			interact.Visible = false
+		end
+
+		return true
+	end
+
+	local function buildDiagnosticsText(status, style)
+		local state = status.state or "clear"
+		local summaryText
+
+		if state == "issues" then
+			local summary = typeof(status.summary) == "string" and status.summary or nil
+			if summary and summary ~= "" then
+				summaryText = summary
+			else
+				summaryText = "Performance irregularities were captured."
+			end
+			summaryText = summaryText .. "\nOpen the Hub Info tab for detailed logs."
+		elseif state == "error" then
+			summaryText = "Diagnostics upload failed."
+			if status.error and tostring(status.error) ~= "" then
+				summaryText = summaryText .. "\n" .. tostring(status.error)
+			end
+			summaryText = summaryText .. "\nOpen the Hub Info tab to retry."
+		else
+			summaryText = style.label
+			if state == "pending" and typeof(status.summary) == "string" and status.summary ~= "" then
+				summaryText = string.format("%s\n(%s)", summaryText, status.summary)
+			end
+		end
+
+		if status.lastUpdated then
+			local okDate, timestamp = pcall(os.date, "%H:%M:%S", status.lastUpdated)
+			if okDate and timestamp then
+				summaryText = string.format("%s\nUpdated %s", summaryText, timestamp)
+			end
+		end
+
+		return summaryText
+	end
+
+	local function applyDiagnosticsStatus(serverInfo)
+		if not ensureDiagnosticsCard(serverInfo) then
+			return
+		end
+
+		local status = getBackendStatus()
+		local state = status.state or "clear"
+		local style = diagnosticsStyles[state] or diagnosticsStyles.clear
+		local signature = string.format(
+			"%s|%s|%s|%s",
+			tostring(state),
+			tostring(status.summary or ""),
+			tostring(status.error or ""),
+			tostring(status.lastUpdated or "")
+		)
+
+		if diagnosticsStatusSignature == signature then
+			return
+		end
+		diagnosticsStatusSignature = signature
+
+		local titleLabel = diagnosticsCard:FindFirstChild("Title")
+		local valueLabel = diagnosticsCard:FindFirstChild("Value")
+		local uiStroke = diagnosticsCard:FindFirstChildWhichIsA("UIStroke")
+
+		if diagnosticsDefaults.background then
+			diagnosticsCard.BackgroundColor3 = diagnosticsDefaults.background
+		end
+
+		if titleLabel and titleLabel:IsA("TextLabel") then
+			titleLabel.TextColor3 = style.titleColor or diagnosticsDefaults.titleColor or titleLabel.TextColor3
+		end
+
+		if valueLabel and valueLabel:IsA("TextLabel") then
+			valueLabel.TextColor3 = style.valueColor or diagnosticsDefaults.valueColor or valueLabel.TextColor3
+			valueLabel.Text = buildDiagnosticsText(status, style)
+		end
+
+		if uiStroke then
+			uiStroke.Color = style.strokeColor or diagnosticsDefaults.strokeColor or uiStroke.Color
+			uiStroke.Transparency = style.strokeTransparency or diagnosticsDefaults.strokeTransparency or uiStroke.Transparency
+		end
+	end
+
 		coroutine.wrap(function()
 	local refreshTimer = 0
 
@@ -232,6 +417,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			return Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
 		end)
 		serverInfo.Region.Value.Text = okRegion and tostring(regionResult) or "N/A"
+
+		applyDiagnosticsStatus(serverInfo)
 
 		-- Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
 		if refreshTimer <= 0 then
