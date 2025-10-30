@@ -213,11 +213,13 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			strokeTransparency = 0.25,
 		},
 		issues = {
+			label = "Diagnostics available - potential performance issues found.",
 			valueColor = Color3.fromRGB(255, 170, 95),
 			strokeColor = Color3.fromRGB(255, 170, 95),
 			strokeTransparency = 0.2,
 		},
 		error = {
+			label = "Diagnostics upload failed.",
 			valueColor = Color3.fromRGB(255, 110, 110),
 			strokeColor = Color3.fromRGB(255, 110, 110),
 			strokeTransparency = 0.2,
@@ -247,15 +249,36 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			return false
 		end
 
-		local candidates = {"Diagnostics", "JoinScript", "Join", "JoinInfo"}
-		for _, name in ipairs(candidates) do
-			local candidate = serverInfo:FindFirstChild(name)
-			if candidate and candidate:IsA("Frame") then
-				diagnosticsCard = candidate
-				break
+		local function normalize(value)
+			if typeof(value) == "string" then
+				return string.lower(value)
 			end
+			return ""
 		end
 
+		local function pickDiagnosticsCard()
+			local fallback = nil
+			for _, child in ipairs(serverInfo:GetChildren()) do
+				if child:IsA("Frame") and child.Name ~= "Template" then
+					local nameLower = normalize(child.Name)
+					local titleLabel = child:FindFirstChild("Title")
+					local titleText = nil
+					if titleLabel and titleLabel:IsA("TextLabel") then
+						titleText = titleLabel.Text
+					end
+					local titleLower = normalize(titleText)
+					if string.find(titleLower, "diagnostic") or string.find(nameLower, "diagnostic") then
+						return child
+					end
+					if not fallback and (string.find(titleLower, "join") or string.find(nameLower, "join")) then
+						fallback = child
+					end
+				end
+			end
+			return fallback
+		end
+
+		diagnosticsCard = pickDiagnosticsCard()
 		if not diagnosticsCard then
 			return false
 		end
@@ -278,6 +301,14 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		end
 
 		local valueLabel = diagnosticsCard:FindFirstChild("Value")
+		if not (valueLabel and valueLabel:IsA("TextLabel")) then
+			for _, child in ipairs(diagnosticsCard:GetChildren()) do
+				if child:IsA("TextLabel") and child.Name ~= "Title" then
+					valueLabel = child
+					break
+				end
+			end
+		end
 		if valueLabel and valueLabel:IsA("TextLabel") then
 			diagnosticsDefaults.valueColor = valueLabel.TextColor3
 			valueLabel.TextWrapped = true
