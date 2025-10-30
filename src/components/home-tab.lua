@@ -88,7 +88,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			message = "Good Executor. I think u can use all Scripts here."
 		elseif table.find(HomeTabSettings.BadExecutors, exec) then
 			color = Color3.fromRGB(255, 180, 50)
-			message = "Bad Exec :( | Scripts may be not Supported"
+			message = "Bad Exec :( | Scripts my be not Supported"
 		elseif table.find(HomeTabSettings.DetectedExecutors, exec) then
 			color = Color3.fromRGB(255, 60, 60)
 			message = "This executor is detected. Why the shit would you use this?!"
@@ -133,43 +133,54 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	end
 
 	local function checkFriends()
-		if friendsCooldown == 0 then
-			friendsCooldown = 25
-
-			local playersFriends = {}
-			local friendsInTotal, onlineFriends, friendsInGame = 0, 0, 0
-
-			local list = Players:GetFriendsAsync(Player.UserId)
-			while true do
-				for _, data in list:GetCurrentPage() do
-					friendsInTotal += 1
-					table.insert(playersFriends, data)
-				end
-				if list.IsFinished then
-					break
-				else
-					list:AdvanceToNextPageAsync()
-				end
-			end
-
-			for _, v in pairs(Player:GetFriendsOnline()) do
-				onlineFriends += 1
-			end
-
-			for _, v in pairs(playersFriends) do
-				if Players:FindFirstChild(v.Username) then
-					friendsInGame += 1
-				end
-			end
-
-			HomeTabPage.detailsholder.dashboard.Friends.All.Value.Text = tostring(friendsInTotal) .. " friends"
-			HomeTabPage.detailsholder.dashboard.Friends.Offline.Value.Text = tostring(friendsInTotal - onlineFriends) .. " friends"
-			HomeTabPage.detailsholder.dashboard.Friends.Online.Value.Text = tostring(onlineFriends) .. " friends"
-			HomeTabPage.detailsholder.dashboard.Friends.InGame.Value.Text = tostring(friendsInGame) .. " friends"
-
-		else
+		if friendsCooldown ~= 0 then
 			friendsCooldown -= 1
+			return
 		end
+
+		if not HomeTabPage or not HomeTabPage.Parent then
+			return
+		end
+
+		local detailsHolder = HomeTabPage:FindFirstChild("detailsholder")
+		local dashboard = detailsHolder and detailsHolder:FindFirstChild("dashboard")
+		local friendsGui = dashboard and dashboard:FindFirstChild("Friends")
+		if not friendsGui then
+			return
+		end
+
+		friendsCooldown = 25
+
+		local playersFriends = {}
+		local friendsInTotal, onlineFriends, friendsInGame = 0, 0, 0
+
+		local list = Players:GetFriendsAsync(Player.UserId)
+		while true do
+			for _, data in list:GetCurrentPage() do
+				friendsInTotal += 1
+				table.insert(playersFriends, data)
+			end
+			if list.IsFinished then
+				break
+			else
+				list:AdvanceToNextPageAsync()
+			end
+		end
+
+		for _, v in pairs(Player:GetFriendsOnline()) do
+			onlineFriends += 1
+		end
+
+		for _, v in pairs(playersFriends) do
+			if Players:FindFirstChild(v.Username) then
+				friendsInGame += 1
+			end
+		end
+
+		friendsGui.All.Value.Text = tostring(friendsInTotal) .. " friends"
+		friendsGui.Offline.Value.Text = tostring(friendsInTotal - onlineFriends) .. " friends"
+		friendsGui.Online.Value.Text = tostring(onlineFriends) .. " friends"
+		friendsGui.InGame.Value.Text = tostring(friendsInGame) .. " friends"
 	end
 
 	local function format(Int)
@@ -188,16 +199,39 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local refreshTimer = 0
 
 	while task.wait(0.5) do
-		-- Serverinformationen aktualisieren
-		HomeTabPage.detailsholder.dashboard.Server.Players.Value.Text = #Players:GetPlayers() .. " playing"
-		HomeTabPage.detailsholder.dashboard.Server.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
+		if not HomeTabPage or not HomeTabPage.Parent then
+			break
+		end
 
-		HomeTabPage.detailsholder.dashboard.Server.Latency.Value.Text =
+		local detailsHolder = HomeTabPage:FindFirstChild("detailsholder")
+		local dashboard = detailsHolder and detailsHolder:FindFirstChild("dashboard")
+		if not dashboard then
+			break
+		end
+
+		local serverInfo = dashboard:FindFirstChild("Server")
+		if not serverInfo then
+			break
+		end
+
+		local friendsGui = dashboard:FindFirstChild("Friends")
+		if not friendsGui then
+			break
+		end
+
+		-- Serverinformationen aktualisieren
+		serverInfo.Players.Value.Text = #Players:GetPlayers() .. " playing"
+		serverInfo.MaxPlayers.Value.Text = Players.MaxPlayers .. " players can join this server"
+
+		serverInfo.Latency.Value.Text =
 			isStudio and tostring(math.round((Players.LocalPlayer:GetNetworkPing() * 2) / 0.01)) .. "ms"
 			or tostring(math.floor(getPing())) .. "ms"
 
-		HomeTabPage.detailsholder.dashboard.Server.Time.Value.Text = convertToHMS(time())
-		HomeTabPage.detailsholder.dashboard.Server.Region.Value.Text = Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
+		serverInfo.Time.Value.Text = convertToHMS(time())
+		local okRegion, regionResult = pcall(function()
+			return Localization:GetCountryRegionForPlayerAsync(Players.LocalPlayer)
+		end)
+		serverInfo.Region.Value.Text = okRegion and tostring(regionResult) or "N/A"
 
 		-- Freunde-Check alle 30 Sekunden (bei Rate-Limit-Fehler auf 60s erhöhen)
 		if refreshTimer <= 0 then
