@@ -890,11 +890,16 @@ local clusterPadding = controlCluster:FindFirstChild("ControlPadding")
 if not clusterPadding then
 	clusterPadding = Instance.new("UIPadding")
 	clusterPadding.Name = "ControlPadding"
-	clusterPadding.PaddingTop = UDim.new(0, 6)
-	clusterPadding.PaddingBottom = UDim.new(0, 6)
+	clusterPadding.PaddingTop = UDim.new(0, 2)
+	clusterPadding.PaddingBottom = UDim.new(0, 2)
 	clusterPadding.PaddingLeft = UDim.new(0, 8)
 	clusterPadding.PaddingRight = UDim.new(0, 8)
 	clusterPadding.Parent = controlCluster
+else
+	clusterPadding.PaddingTop = UDim.new(0, 2)
+	clusterPadding.PaddingBottom = UDim.new(0, 2)
+	clusterPadding.PaddingLeft = UDim.new(0, 8)
+	clusterPadding.PaddingRight = UDim.new(0, 8)
 end
 
 for _, child in ipairs(controlCluster:GetChildren()) do
@@ -903,7 +908,7 @@ for _, child in ipairs(controlCluster:GetChildren()) do
 	end
 end
 
-local dividerHeight = math.max(buttonSize.Y.Offset - 10, 12)
+local dividerHeight = math.max(buttonSize.Y.Offset - 6, 10)
 local layoutOrder = 1
 
 local function addDivider(order)
