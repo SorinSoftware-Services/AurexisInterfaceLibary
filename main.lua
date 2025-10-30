@@ -724,9 +724,17 @@ local function Hide(Window, bind, notif)
 	for _, tabbtn in ipairs(Window.Navigation.Tabs:GetChildren()) do
 		if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "InActive Template" then
 			TweenService:Create(tabbtn, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
-			TweenService:Create(tabbtn.DropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
-			TweenService:Create(tabbtn.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			if tabbtn.ImageLabel then
+				TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			end
+			local dropShadowHolder = tabbtn:FindFirstChild("DropShadowHolder")
+			if dropShadowHolder and dropShadowHolder:FindFirstChild("DropShadow") then
+				TweenService:Create(dropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			end
+			local tabStroke = tabbtn:FindFirstChildWhichIsA("UIStroke")
+			if tabStroke then
+				TweenService:Create(tabStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			end
 		end
 	end
 
@@ -848,13 +856,13 @@ if not controlCluster then
 	local stroke = Instance.new("UIStroke")
 	stroke.Name = "ControlClusterStroke"
 	stroke.Thickness = 1
-	stroke.Transparency = 0.45
-	stroke.Color = Color3.fromRGB(84, 88, 110)
+	stroke.Transparency = 0.6
+	stroke.Color = Color3.fromRGB(94, 98, 120)
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	stroke.ZIndex = referenceButton and referenceButton.ZIndex or 1
 	stroke.Parent = controlCluster
 
-	registerTopbarDecoration(controlCluster, 0.42, stroke.Transparency)
+	registerTopbarDecoration(controlCluster, 0.55, stroke.Transparency)
 else
 	local stroke = controlCluster:FindFirstChildWhichIsA("UIStroke")
 	if stroke then
@@ -862,17 +870,21 @@ else
 		stroke.ZIndex = referenceButton and referenceButton.ZIndex or stroke.ZIndex
 		controlCluster:SetAttribute("AurexisTopbarTargetStroke", stroke.Transparency)
 	end
+	controlCluster:SetAttribute("AurexisTopbarTargetBackground", 0.55)
+	registerTopbarDecoration(controlCluster, 0.55, stroke and stroke.Transparency or nil)
 end
 
 controlCluster.AnchorPoint = clusterAnchor
 controlCluster.Position = clusterPosition
 controlCluster.AutomaticSize = Enum.AutomaticSize.XY
 controlCluster.BackgroundColor3 = Color3.fromRGB(32, 30, 38)
-controlCluster.BackgroundTransparency = 0.42
+controlCluster.BackgroundTransparency = 0.55
+controlCluster:SetAttribute("AurexisTopbarTargetBackground", 0.55)
 controlCluster.BorderSizePixel = 0
 controlCluster.Size = UDim2.new(0, 0, 0, 0)
 controlCluster.Visible = false
 controlCluster.ZIndex = referenceButton and math.max(referenceButton.ZIndex - 1, 0) or 0
+controlCluster.LayoutOrder = referenceButton and (referenceButton.LayoutOrder or 0) or 0
 
 local clusterLayout = controlCluster:FindFirstChild("ControlLayout")
 if not clusterLayout then
@@ -882,7 +894,7 @@ if not clusterLayout then
 	clusterLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	clusterLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 	clusterLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	clusterLayout.Padding = UDim.new(0, 4)
+	clusterLayout.Padding = UDim.new(0, 3)
 	clusterLayout.Parent = controlCluster
 end
 
@@ -892,14 +904,14 @@ if not clusterPadding then
 	clusterPadding.Name = "ControlPadding"
 	clusterPadding.PaddingTop = UDim.new(0, 2)
 	clusterPadding.PaddingBottom = UDim.new(0, 2)
-	clusterPadding.PaddingLeft = UDim.new(0, 8)
-	clusterPadding.PaddingRight = UDim.new(0, 8)
+	clusterPadding.PaddingLeft = UDim.new(0, 4)
+	clusterPadding.PaddingRight = UDim.new(0, 4)
 	clusterPadding.Parent = controlCluster
 else
 	clusterPadding.PaddingTop = UDim.new(0, 2)
 	clusterPadding.PaddingBottom = UDim.new(0, 2)
-	clusterPadding.PaddingLeft = UDim.new(0, 8)
-	clusterPadding.PaddingRight = UDim.new(0, 8)
+	clusterPadding.PaddingLeft = UDim.new(0, 4)
+	clusterPadding.PaddingRight = UDim.new(0, 4)
 end
 
 for _, child in ipairs(controlCluster:GetChildren()) do
@@ -915,7 +927,7 @@ local function addDivider(order)
 	local divider = Instance.new("Frame")
 	divider.Name = "ControlDivider" .. order
 	divider.BackgroundColor3 = Color3.fromRGB(96, 100, 122)
-	divider.BackgroundTransparency = 0.35
+	divider.BackgroundTransparency = 0.45
 	divider.BorderSizePixel = 0
 	divider.Size = UDim2.new(0, 1, 0, dividerHeight)
 	divider.LayoutOrder = order
@@ -1311,12 +1323,20 @@ local function Unhide(Window, currentTab)
 	end
 	for _, tabbtn in ipairs(Window.Navigation.Tabs:GetChildren()) do
 		if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "InActive Template" then
+			local tabStroke = tabbtn:FindFirstChildWhichIsA("UIStroke")
 			if tabbtn.Name == currentTab then
 				TweenService:Create(tabbtn, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-				TweenService:Create(tabbtn.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 0.41}):Play()
+				if tabStroke then
+					TweenService:Create(tabStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 0.41}):Play()
+				end
 			end
-			TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
-			TweenService:Create(tabbtn.DropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			if tabbtn.ImageLabel then
+				TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
+			end
+			local dropShadowHolder = tabbtn:FindFirstChild("DropShadowHolder")
+			if dropShadowHolder and dropShadowHolder:FindFirstChild("DropShadow") then
+				TweenService:Create(dropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			end
 		end
 	end
 
@@ -1626,7 +1646,10 @@ function Aurexis:CreateWindow(WindowSettings)
 	TweenService:Create(Main.Title.subtitle, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 	TweenService:Create(Main.Logo, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
 	TweenService:Create(Navigation.Player.icon.ImageLabel, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-	TweenService:Create(Navigation.Player.icon.UIStroke, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+	local navIconStroke = Navigation.Player.icon:FindFirstChildWhichIsA("UIStroke")
+	if navIconStroke then
+		TweenService:Create(navIconStroke, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+	end
 	TweenService:Create(Main.Line, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
 	wait(0.4)
 	LoadingFrame.Visible = false
@@ -1700,9 +1723,14 @@ FirstTab = false
 		TabPage.Parent = Elements
 
 		function Tab:Activate()
-			tween(TabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
+			if TabButton.ImageLabel then
+				tween(TabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
+			end
 			tween(TabButton, {BackgroundTransparency = 0})
-			tween(TabButton.UIStroke, {Transparency = 0.41})
+			local buttonStroke = TabButton:FindFirstChildWhichIsA("UIStroke")
+			if buttonStroke then
+				tween(buttonStroke, {Transparency = 0.41})
+			end
 
 			Elements.UIPageLayout:JumpTo(TabPage)
 
@@ -1710,9 +1738,14 @@ FirstTab = false
 
 			for _, OtherTabButton in ipairs(Navigation.Tabs:GetChildren()) do
 				if OtherTabButton.Name ~= "InActive Template" and OtherTabButton.ClassName == "Frame" and OtherTabButton ~= TabButton then
-					tween(OtherTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(221,221,221)})
+					if OtherTabButton.ImageLabel then
+						tween(OtherTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(221,221,221)})
+					end
 					tween(OtherTabButton, {BackgroundTransparency = 1})
-					tween(OtherTabButton.UIStroke, {Transparency = 1})
+					local otherStroke = OtherTabButton:FindFirstChildWhichIsA("UIStroke")
+					if otherStroke then
+						tween(otherStroke, {Transparency = 1})
+					end
 				end
 
 			end
@@ -1938,6 +1971,8 @@ function Aurexis:Destroy()
             Notification:Destroy()
         end
     end
+    topbarButtons = {}
+    topbarDecorations = {}
     AurexisUI:Destroy()
 end
 
