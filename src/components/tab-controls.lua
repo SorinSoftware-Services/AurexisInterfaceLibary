@@ -215,6 +215,12 @@ function Tab:CreateParagraph(ParagraphSettings)
 		tween(Paragraph, {Size = UDim2.new(Paragraph.Size.X.Scale, Paragraph.Size.X.Offset, 0, Paragraph.Text.TextBounds.Y + 40)})
 	end
 
+	ParagraphV.Instance = Paragraph
+
+	function ParagraphV:SetVisible(isVisible)
+		Paragraph.Visible = isVisible and true or false
+	end
+
 	function ParagraphV:Set(NewParagraphSettings)
 
 		NewParagraphSettings = Kwargify({
@@ -1156,6 +1162,12 @@ function Tab:CreateInput(InputSettings, Flag)
 	Input["MouseLeave"]:Connect(function()
 		tween(Input.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 	end)
+
+	InputV.Instance = Input
+
+	function InputV:SetVisible(isVisible)
+		Input.Visible = isVisible and true or false
+	end
 
 
 	function InputV:Set(NewInputSettings)
