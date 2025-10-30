@@ -239,6 +239,12 @@ local function attachSectionControls(ctx)
 
 		ParagraphV:Update()
 
+		ParagraphV.Instance = Paragraph
+
+		function ParagraphV:SetVisible(isVisible)
+			Paragraph.Visible = isVisible and true or false
+		end
+
 		return ParagraphV
 	end
 
@@ -967,6 +973,12 @@ local function attachSectionControls(ctx)
 		Input["MouseLeave"]:Connect(function()
 			tween(Input.UIStroke, {Color = Color3.fromRGB(64,61,76)})
 		end)
+
+		InputV.Instance = Input
+
+		function InputV:SetVisible(isVisible)
+			Input.Visible = isVisible and true or false
+		end
 
 
 		function InputV:Set(NewInputSettings)
