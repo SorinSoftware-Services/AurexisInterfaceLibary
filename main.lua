@@ -34,7 +34,7 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
 local Release = "Pre Release [v 0.2.0]"
 
@@ -75,7 +75,7 @@ local function requireRemote(path)
 	if ok then
 		return result
 	else
-		warn("⚠️ Failed to load module: " .. path .. " → " .. tostring(result))
+		warn("?? Failed to load module: " .. path .. " ? " .. tostring(result))
 		return {}
 	end
 end
@@ -175,6 +175,124 @@ function tween(object, goal, callback, tweenin)
 	local tween = TweenService:Create(object,tweenin or tweeninfo, goal)
 	tween.Completed:Connect(callback or function() end)
 	tween:Play()
+end
+
+local topbarButtons = {}
+local topbarDecorations = {}
+
+local function registerTopbarButton(frame)
+	if not (frame and frame:IsA("Frame")) then
+		return
+	end
+	frame:SetAttribute("AurexisTopbarButton", true)
+	if frame.BackgroundTransparency ~= nil then
+		frame:SetAttribute("AurexisTopbarTargetBackground", frame.BackgroundTransparency)
+	end
+	local stroke = frame:FindFirstChildWhichIsA("UIStroke")
+	if stroke then
+		frame:SetAttribute("AurexisTopbarTargetStroke", stroke.Transparency)
+	end
+	local icon = frame:FindFirstChildWhichIsA("ImageButton") or frame:FindFirstChildWhichIsA("ImageLabel")
+	if icon then
+		frame:SetAttribute("AurexisTopbarTargetImage", icon.ImageTransparency)
+	end
+	for _, existing in ipairs(topbarButtons) do
+		if existing == frame then
+			return
+		end
+	end
+	table.insert(topbarButtons, frame)
+end
+
+local function registerTopbarDecoration(frame, targetBackground, targetStroke)
+	if not (frame and frame:IsA("Frame")) then
+		return
+	end
+	frame:SetAttribute("AurexisTopbarDecoration", true)
+	if targetBackground ~= nil then
+		frame:SetAttribute("AurexisTopbarTargetBackground", targetBackground)
+	elseif frame:GetAttribute("AurexisTopbarTargetBackground") == nil then
+		frame:SetAttribute("AurexisTopbarTargetBackground", frame.BackgroundTransparency or 0.35)
+	end
+	local stroke = frame:FindFirstChildWhichIsA("UIStroke")
+	if targetStroke ~= nil then
+		frame:SetAttribute("AurexisTopbarTargetStroke", targetStroke)
+	elseif stroke and frame:GetAttribute("AurexisTopbarTargetStroke") == nil then
+		frame:SetAttribute("AurexisTopbarTargetStroke", stroke.Transparency)
+	end
+	for _, existing in ipairs(topbarDecorations) do
+		if existing == frame then
+			return
+		end
+	end
+	table.insert(topbarDecorations, frame)
+end
+
+local function iterateTopbarButtons()
+	local active = {}
+	for _, button in ipairs(topbarButtons) do
+		if button and button.Parent then
+			table.insert(active, button)
+		end
+	end
+	return active
+end
+
+local function iterateTopbarDecorations()
+	local active = {}
+	for _, frame in ipairs(topbarDecorations) do
+		if frame and frame.Parent then
+			table.insert(active, frame)
+		end
+	end
+	return active
+end
+
+local function setTopbarVisible(visible)
+	for _, button in ipairs(iterateTopbarButtons()) do
+		local targetBackground = button:GetAttribute("AurexisTopbarTargetBackground") or 0.25
+		local stroke = button:FindFirstChildWhichIsA("UIStroke")
+		local icon = button:FindFirstChildWhichIsA("ImageButton") or button:FindFirstChildWhichIsA("ImageLabel")
+
+		if visible then
+			button.Visible = true
+		end
+
+		tween(button, {BackgroundTransparency = visible and targetBackground or 1})
+
+		if stroke then
+			local targetStroke = button:GetAttribute("AurexisTopbarTargetStroke") or 0.5
+			tween(stroke, {Transparency = visible and targetStroke or 1})
+		end
+
+		if icon then
+			local targetImage = button:GetAttribute("AurexisTopbarTargetImage") or 0.25
+			tween(icon, {ImageTransparency = visible and targetImage or 1})
+		end
+
+		if not visible then
+			button.Visible = false
+		end
+	end
+
+	for _, decoration in ipairs(iterateTopbarDecorations()) do
+		if visible then
+			decoration.Visible = true
+		end
+
+		local backgroundTarget = decoration:GetAttribute("AurexisTopbarTargetBackground") or 0.35
+		tween(decoration, {BackgroundTransparency = visible and backgroundTarget or 1})
+
+		local stroke = decoration:FindFirstChildWhichIsA("UIStroke")
+		if stroke then
+			local strokeTarget = decoration:GetAttribute("AurexisTopbarTargetStroke") or 0.5
+			tween(stroke, {Transparency = visible and strokeTarget or 1})
+		end
+
+		if not visible then
+			decoration.Visible = false
+		end
+	end
 end
 
 local cleanedLegacyBlur = false
@@ -560,6 +678,7 @@ end
 local AurexisUI = isStudio and script.Parent:WaitForChild("Aurexis UI") or game:GetObjects("rbxassetid://86467455075715")[1]
 
 local SizeBleh = nil
+local mainWindowFrame = nil
 
 local function Hide(Window, bind, notif)
 	SizeBleh = Window.Size
@@ -576,20 +695,46 @@ local function Hide(Window, bind, notif)
 	tween(Window.Logo, {ImageTransparency = 1})
 	tween(Window.Navigation.Line, {BackgroundTransparency = 1})
 
-	for _, TopbarButton in ipairs(Window.Controls:GetChildren()) do
-		if TopbarButton.ClassName == "Frame" then
-			tween(TopbarButton, {BackgroundTransparency = 1})
-			tween(TopbarButton.UIStroke, {Transparency = 1})
-			tween(TopbarButton.ImageLabel, {ImageTransparency = 1})
-			TopbarButton.Visible = false
+	if Window == mainWindowFrame then
+		setTopbarVisible(false)
+	else
+		local controlsContainer = nil
+		if typeof(Window) == "Instance" then
+			controlsContainer = Window:FindFirstChild("Controls")
+		end
+		controlsContainer = controlsContainer or (Window and Window.Controls)
+
+		if controlsContainer then
+			for _, TopbarButton in ipairs(controlsContainer:GetChildren()) do
+				if TopbarButton.ClassName == "Frame" then
+					tween(TopbarButton, {BackgroundTransparency = 1})
+					local stroke = TopbarButton:FindFirstChildWhichIsA("UIStroke")
+					if stroke then
+						tween(stroke, {Transparency = 1})
+					end
+					local icon = TopbarButton:FindFirstChildWhichIsA("ImageButton") or TopbarButton:FindFirstChildWhichIsA("ImageLabel")
+					if icon then
+						tween(icon, {ImageTransparency = 1})
+					end
+					TopbarButton.Visible = false
+				end
+			end
 		end
 	end
 	for _, tabbtn in ipairs(Window.Navigation.Tabs:GetChildren()) do
 		if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "InActive Template" then
 			TweenService:Create(tabbtn, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {BackgroundTransparency = 1}):Play()
-			TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
-			TweenService:Create(tabbtn.DropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
-			TweenService:Create(tabbtn.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			if tabbtn.ImageLabel then
+				TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			end
+			local dropShadowHolder = tabbtn:FindFirstChild("DropShadowHolder")
+			if dropShadowHolder and dropShadowHolder:FindFirstChild("DropShadow") then
+				TweenService:Create(dropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			end
+			local tabStroke = tabbtn:FindFirstChildWhichIsA("UIStroke")
+			if tabStroke then
+				TweenService:Create(tabStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 1}):Play()
+			end
 		end
 	end
 
@@ -637,6 +782,7 @@ AurexisUI.Notifications.Template.Visible = false
 AurexisUI.DisplayOrder = 1000000000
 
 local Main : Frame = AurexisUI.SmartWindow
+mainWindowFrame = Main
 local Dragger = Main.Drag
 local dragBar = AurexisUI.Drag
 local dragInteract = dragBar and dragBar.Interact or nil
@@ -644,6 +790,163 @@ local dragBarCosmetic = dragBar and dragBar.Drag or nil
 local Elements = Main.Elements.Interactions
 local LoadingFrame = Main.LoadingFrame
 local Navigation = Main.Navigation
+local Controls = Main.Controls
+local closeButton = Controls and Controls:FindFirstChild("Close", true) or nil
+local toggleSizeButton = Controls and Controls:FindFirstChild("ToggleSize", true) or nil
+local minimizeButton = Controls and Controls:FindFirstChild("Minimize", true) or nil
+
+if not minimizeButton and closeButton then
+	minimizeButton = closeButton:Clone()
+	minimizeButton.Name = "Minimize"
+	minimizeButton.Visible = closeButton.Visible
+	local icon = minimizeButton:FindFirstChildWhichIsA("ImageButton") or minimizeButton:FindFirstChildWhichIsA("ImageLabel")
+	local minimizeIcon = Aurexis:GetIcon("minimize", "Material")
+	if icon and minimizeIcon then
+		if typeof(minimizeIcon) == "table" and minimizeIcon.id then
+			icon.Image = "rbxassetid://" .. minimizeIcon.id
+			icon.ImageRectOffset = minimizeIcon.imageRectOffset
+			icon.ImageRectSize = minimizeIcon.imageRectSize
+		else
+			icon.Image = minimizeIcon
+			icon.ImageRectOffset = Vector2.new(0, 0)
+			icon.ImageRectSize = Vector2.new(0, 0)
+		end
+	end
+end
+
+local orderedButtons = {}
+if minimizeButton then
+	table.insert(orderedButtons, minimizeButton)
+end
+if toggleSizeButton then
+	table.insert(orderedButtons, toggleSizeButton)
+end
+if closeButton then
+	table.insert(orderedButtons, closeButton)
+end
+
+for _, button in ipairs(orderedButtons) do
+	registerTopbarButton(button)
+end
+
+local controlClusterParent = Controls
+local referenceButton = closeButton or toggleSizeButton or minimizeButton
+local clusterAnchor = referenceButton and referenceButton.AnchorPoint or Vector2.new(0.5, 0.5)
+local clusterPosition = referenceButton and referenceButton.Position or UDim2.new(1, -10, 0, 0)
+local buttonSize = referenceButton and referenceButton.Size or UDim2.fromOffset(32, 32)
+local controlCluster = nil
+
+if controlClusterParent then
+	controlCluster = controlClusterParent:FindFirstChild("ControlCluster")
+end
+
+if controlCluster and controlCluster.Parent ~= controlClusterParent then
+	controlCluster.Parent = controlClusterParent
+end
+
+if not controlCluster then
+	controlCluster = Instance.new("Frame")
+	controlCluster.Name = "ControlCluster"
+	controlCluster.Parent = controlClusterParent
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 7)
+	corner.Parent = controlCluster
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Name = "ControlClusterStroke"
+	stroke.Thickness = 1
+	stroke.Transparency = 0.6
+	stroke.Color = Color3.fromRGB(94, 98, 120)
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.ZIndex = referenceButton and referenceButton.ZIndex or 1
+	stroke.Parent = controlCluster
+
+	registerTopbarDecoration(controlCluster, 0.55, stroke.Transparency)
+else
+	local stroke = controlCluster:FindFirstChildWhichIsA("UIStroke")
+	if stroke then
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.ZIndex = referenceButton and referenceButton.ZIndex or stroke.ZIndex
+		controlCluster:SetAttribute("AurexisTopbarTargetStroke", stroke.Transparency)
+	end
+	controlCluster:SetAttribute("AurexisTopbarTargetBackground", 0.55)
+	registerTopbarDecoration(controlCluster, 0.55, stroke and stroke.Transparency or nil)
+end
+
+controlCluster.AnchorPoint = clusterAnchor
+controlCluster.Position = clusterPosition
+controlCluster.AutomaticSize = Enum.AutomaticSize.XY
+controlCluster.BackgroundColor3 = Color3.fromRGB(32, 30, 38)
+controlCluster.BackgroundTransparency = 0.55
+controlCluster:SetAttribute("AurexisTopbarTargetBackground", 0.55)
+controlCluster.BorderSizePixel = 0
+controlCluster.Size = UDim2.new(0, 0, 0, 0)
+controlCluster.Visible = false
+controlCluster.ZIndex = referenceButton and math.max(referenceButton.ZIndex - 1, 0) or 0
+controlCluster.LayoutOrder = referenceButton and (referenceButton.LayoutOrder or 0) or 0
+
+local clusterLayout = controlCluster:FindFirstChild("ControlLayout")
+if not clusterLayout then
+	clusterLayout = Instance.new("UIListLayout")
+	clusterLayout.Name = "ControlLayout"
+	clusterLayout.FillDirection = Enum.FillDirection.Horizontal
+	clusterLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	clusterLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	clusterLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	clusterLayout.Padding = UDim.new(0, 3)
+	clusterLayout.Parent = controlCluster
+end
+
+local clusterPadding = controlCluster:FindFirstChild("ControlPadding")
+if not clusterPadding then
+	clusterPadding = Instance.new("UIPadding")
+	clusterPadding.Name = "ControlPadding"
+	clusterPadding.PaddingTop = UDim.new(0, 2)
+	clusterPadding.PaddingBottom = UDim.new(0, 2)
+	clusterPadding.PaddingLeft = UDim.new(0, 4)
+	clusterPadding.PaddingRight = UDim.new(0, 4)
+	clusterPadding.Parent = controlCluster
+else
+	clusterPadding.PaddingTop = UDim.new(0, 2)
+	clusterPadding.PaddingBottom = UDim.new(0, 2)
+	clusterPadding.PaddingLeft = UDim.new(0, 4)
+	clusterPadding.PaddingRight = UDim.new(0, 4)
+end
+
+for _, child in ipairs(controlCluster:GetChildren()) do
+	if child.Name:match("^ControlDivider") then
+		child:Destroy()
+	end
+end
+
+local dividerHeight = math.max(buttonSize.Y.Offset - 6, 10)
+local layoutOrder = 1
+
+local function addDivider(order)
+	local divider = Instance.new("Frame")
+	divider.Name = "ControlDivider" .. order
+	divider.BackgroundColor3 = Color3.fromRGB(96, 100, 122)
+	divider.BackgroundTransparency = 0.45
+	divider.BorderSizePixel = 0
+	divider.Size = UDim2.new(0, 1, 0, dividerHeight)
+	divider.LayoutOrder = order
+	divider.ZIndex = referenceButton and referenceButton.ZIndex or 1
+	divider.Parent = controlCluster
+	registerTopbarDecoration(divider, divider.BackgroundTransparency, nil)
+end
+
+for index, button in ipairs(orderedButtons) do
+	if button then
+		button.Parent = controlCluster
+		button.LayoutOrder = layoutOrder
+		layoutOrder += 1
+		if index < #orderedButtons then
+			addDivider(layoutOrder)
+			layoutOrder += 1
+		end
+	end
+end
 
 local function scaleUDim2(size: UDim2, multiplier: number): UDim2
 	return UDim2.new(
@@ -992,22 +1295,48 @@ local function Unhide(Window, currentTab)
 	tween(Window.Logo, {ImageTransparency = 0})
 	tween(Window.Navigation.Line, {BackgroundTransparency = 0})
 
-	for _, TopbarButton in ipairs(Window.Controls:GetChildren()) do
-		if TopbarButton.ClassName == "Frame" and TopbarButton.Name ~= "Theme" then
-			TopbarButton.Visible = true
-			tween(TopbarButton, {BackgroundTransparency = 0.25})
-			tween(TopbarButton.UIStroke, {Transparency = 0.5})
-			tween(TopbarButton.ImageLabel, {ImageTransparency = 0.25})
+	if Window == mainWindowFrame then
+		setTopbarVisible(true)
+	else
+		local controlsContainer = nil
+		if typeof(Window) == "Instance" then
+			controlsContainer = Window:FindFirstChild("Controls")
+		end
+		controlsContainer = controlsContainer or (Window and Window.Controls)
+
+		if controlsContainer then
+			for _, TopbarButton in ipairs(controlsContainer:GetChildren()) do
+				if TopbarButton.ClassName == "Frame" and TopbarButton.Name ~= "Theme" then
+					TopbarButton.Visible = true
+					tween(TopbarButton, {BackgroundTransparency = 0.25})
+					local stroke = TopbarButton:FindFirstChildWhichIsA("UIStroke")
+					if stroke then
+						tween(stroke, {Transparency = 0.5})
+					end
+					local icon = TopbarButton:FindFirstChildWhichIsA("ImageButton") or TopbarButton:FindFirstChildWhichIsA("ImageLabel")
+					if icon then
+						tween(icon, {ImageTransparency = 0.25})
+					end
+				end
+			end
 		end
 	end
 	for _, tabbtn in ipairs(Window.Navigation.Tabs:GetChildren()) do
 		if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "InActive Template" then
+			local tabStroke = tabbtn:FindFirstChildWhichIsA("UIStroke")
 			if tabbtn.Name == currentTab then
 				TweenService:Create(tabbtn, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {BackgroundTransparency = 0}):Play()
-				TweenService:Create(tabbtn.UIStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 0.41}):Play()
+				if tabStroke then
+					TweenService:Create(tabStroke, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {Transparency = 0.41}):Play()
+				end
 			end
-			TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
-			TweenService:Create(tabbtn.DropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			if tabbtn.ImageLabel then
+				TweenService:Create(tabbtn.ImageLabel, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 0}):Play()
+			end
+			local dropShadowHolder = tabbtn:FindFirstChild("DropShadowHolder")
+			if dropShadowHolder and dropShadowHolder:FindFirstChild("DropShadow") then
+				TweenService:Create(dropShadowHolder.DropShadow, TweenInfo.new(0.3, Enum.EasingStyle.Exponential), {ImageTransparency = 1}):Play()
+			end
 		end
 	end
 
@@ -1024,14 +1353,20 @@ else
 end
 
 local function Maximise(Window)
-	Window.Controls.ToggleSize.ImageLabel.Image = "rbxassetid://10137941941"
+	local toggleImageLabel = toggleSizeButton and (toggleSizeButton:FindFirstChildWhichIsA("ImageButton") or toggleSizeButton:FindFirstChildWhichIsA("ImageLabel"))
+	if toggleImageLabel then
+		toggleImageLabel.Image = "rbxassetid://10137941941"
+	end
 	tween(Window, {Size = MainSize})
 	Window.Elements.Visible = true
 	Window.Navigation.Visible = true
 end
 
 local function Minimize(Window)
-	Window.Controls.ToggleSize.ImageLabel.Image = "rbxassetid://11036884234"
+	local toggleImageLabel = toggleSizeButton and (toggleSizeButton:FindFirstChildWhichIsA("ImageButton") or toggleSizeButton:FindFirstChildWhichIsA("ImageLabel"))
+	if toggleImageLabel then
+		toggleImageLabel.Image = "rbxassetid://11036884234"
+	end
 	Window.Elements.Visible = false
 	Window.Navigation.Visible = false
 	tween(Window, {Size = MinSize})
@@ -1311,7 +1646,10 @@ function Aurexis:CreateWindow(WindowSettings)
 	TweenService:Create(Main.Title.subtitle, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
 	TweenService:Create(Main.Logo, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
 	TweenService:Create(Navigation.Player.icon.ImageLabel, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
-	TweenService:Create(Navigation.Player.icon.UIStroke, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+	local navIconStroke = Navigation.Player.icon:FindFirstChildWhichIsA("UIStroke")
+	if navIconStroke then
+		TweenService:Create(navIconStroke, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+	end
 	TweenService:Create(Main.Line, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
 	wait(0.4)
 	LoadingFrame.Visible = false
@@ -1385,9 +1723,14 @@ FirstTab = false
 		TabPage.Parent = Elements
 
 		function Tab:Activate()
-			tween(TabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
+			if TabButton.ImageLabel then
+				tween(TabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(255,255,255)})
+			end
 			tween(TabButton, {BackgroundTransparency = 0})
-			tween(TabButton.UIStroke, {Transparency = 0.41})
+			local buttonStroke = TabButton:FindFirstChildWhichIsA("UIStroke")
+			if buttonStroke then
+				tween(buttonStroke, {Transparency = 0.41})
+			end
 
 			Elements.UIPageLayout:JumpTo(TabPage)
 
@@ -1395,9 +1738,14 @@ FirstTab = false
 
 			for _, OtherTabButton in ipairs(Navigation.Tabs:GetChildren()) do
 				if OtherTabButton.Name ~= "InActive Template" and OtherTabButton.ClassName == "Frame" and OtherTabButton ~= TabButton then
-					tween(OtherTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(221,221,221)})
+					if OtherTabButton.ImageLabel then
+						tween(OtherTabButton.ImageLabel, {ImageColor3 = Color3.fromRGB(221,221,221)})
+					end
 					tween(OtherTabButton, {BackgroundTransparency = 1})
-					tween(OtherTabButton.UIStroke, {Transparency = 1})
+					local otherStroke = OtherTabButton:FindFirstChildWhichIsA("UIStroke")
+					if otherStroke then
+						tween(otherStroke, {Transparency = 1})
+					end
 				end
 
 			end
@@ -1494,29 +1842,55 @@ FirstTab = false
 	Navigation.Visible = true
 	tween(Navigation.Line, {BackgroundTransparency = 0})
 
-	for _, TopbarButton in ipairs(Main.Controls:GetChildren()) do
-		if TopbarButton.ClassName == "Frame" and TopbarButton.Name ~= "Theme" then
-			TopbarButton.Visible = true
-			tween(TopbarButton, {BackgroundTransparency = 0.25})
-			tween(TopbarButton.UIStroke, {Transparency = 0.5})
-			tween(TopbarButton.ImageLabel, {ImageTransparency = 0.25})
+	setTopbarVisible(true)
+
+	local function getTopbarIcon(container)
+		if not container then
+			return nil
 		end
+		return container:FindFirstChildWhichIsA("ImageButton") or container:FindFirstChildWhichIsA("ImageLabel")
 	end
 
-	Main.Controls.Close.ImageLabel.MouseButton1Click:Connect(function()
-		Hide(Main, Window.Bind, true)
-		dragBar.Visible = false
+	local function collapseWindow(showNotification)
+		Hide(Main, Window.Bind, showNotification)
+		if dragBar then
+			dragBar.Visible = false
+		end
 		Window.State = false
 		if UserInputService.KeyboardEnabled == false then
 			AurexisUI.MobileSupport.Visible = true
 		end
-	end)
-	Main.Controls.Close["MouseEnter"]:Connect(function()
-		tween(Main.Controls.Close.ImageLabel, {ImageColor3 = Color3.new(1,1,1)})
-	end)
-	Main.Controls.Close["MouseLeave"]:Connect(function()
-		tween(Main.Controls.Close.ImageLabel, {ImageColor3 = Color3.fromRGB(195,195,195)})
-	end)
+	end
+
+	local minimizeIcon = getTopbarIcon(minimizeButton)
+	if minimizeButton and minimizeIcon then
+		minimizeIcon.MouseButton1Click:Connect(function()
+			collapseWindow(true)
+		end)
+		minimizeButton.MouseEnter:Connect(function()
+			tween(minimizeIcon, {ImageColor3 = Color3.new(1, 1, 1)})
+		end)
+		minimizeButton.MouseLeave:Connect(function()
+			tween(minimizeIcon, {ImageColor3 = Color3.fromRGB(195, 195, 195)})
+		end)
+	end
+
+	local closeIcon = getTopbarIcon(closeButton)
+	if closeButton and closeIcon then
+		closeIcon.MouseButton1Click:Connect(function()
+			Window.State = true
+			if dragBar then
+				dragBar.Visible = false
+			end
+			Aurexis:Destroy()
+		end)
+		closeButton.MouseEnter:Connect(function()
+			tween(closeIcon, {ImageColor3 = Color3.new(1, 1, 1)})
+		end)
+		closeButton.MouseLeave:Connect(function()
+			tween(closeIcon, {ImageColor3 = Color3.fromRGB(195, 195, 195)})
+		end)
+	end
 
 	UserInputService.InputBegan:Connect(function(input, gpe)
 		if gpe then return end
@@ -1539,22 +1913,31 @@ FirstTab = false
 		end
 	end)
 
-	Main.Controls.ToggleSize.ImageLabel.MouseButton1Click:Connect(function()
-		Window.Size = not Window.Size
-		if Window.Size then
-			Minimize(Main)
-			dragBar.Visible = false
-		else
-			Maximise(Main)
-			dragBar.Visible = true
-		end
-	end)
-	Main.Controls.ToggleSize["MouseEnter"]:Connect(function()
-		tween(Main.Controls.ToggleSize.ImageLabel, {ImageColor3 = Color3.new(1,1,1)})
-	end)
-	Main.Controls.ToggleSize["MouseLeave"]:Connect(function()
-		tween(Main.Controls.ToggleSize.ImageLabel, {ImageColor3 = Color3.fromRGB(195,195,195)})
-	end)
+	local toggleSizeIcon = toggleSizeButton and (toggleSizeButton:FindFirstChildWhichIsA("ImageButton") or toggleSizeButton:FindFirstChildWhichIsA("ImageLabel"))
+	if toggleSizeIcon then
+		toggleSizeIcon.MouseButton1Click:Connect(function()
+			Window.Size = not Window.Size
+			if Window.Size then
+				Minimize(Main)
+				if dragBar then
+					dragBar.Visible = false
+				end
+			else
+				Maximise(Main)
+				if dragBar then
+					dragBar.Visible = true
+				end
+			end
+		end)
+	end
+	if toggleSizeButton and toggleSizeIcon then
+		toggleSizeButton.MouseEnter:Connect(function()
+			tween(toggleSizeIcon, {ImageColor3 = Color3.new(1,1,1)})
+		end)
+		toggleSizeButton.MouseLeave:Connect(function()
+			tween(toggleSizeIcon, {ImageColor3 = Color3.fromRGB(195,195,195)})
+		end)
+	end
 
 	Main.Controls.Theme.ImageLabel.MouseButton1Click:Connect(function()
 		if Window.Settings then
@@ -1588,6 +1971,8 @@ function Aurexis:Destroy()
             Notification:Destroy()
         end
     end
+    topbarButtons = {}
+    topbarDecorations = {}
     AurexisUI:Destroy()
 end
 
