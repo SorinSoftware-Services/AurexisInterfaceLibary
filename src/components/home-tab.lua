@@ -2,7 +2,6 @@
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
 
 
 return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
@@ -145,13 +144,10 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		local detailsHolder = HomeTabPage:FindFirstChild("detailsholder")
 		local dashboard = detailsHolder and detailsHolder:FindFirstChild("dashboard")
-		local friendsGui = dashboard and dashboard:FindFirstChild("Friends", true)
+		local friendsGui = dashboard and dashboard:FindFirstChild("Friends")
 		if not friendsGui then
 			return
 		end
-
-		configureDashboardLayout(dashboard)
-		configureFriendsLayout(friendsGui)
 
 		friendsCooldown = 25
 
@@ -166,10 +162,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			end
 			if list.IsFinished then
 				break
-			elseif typeof(list.AdvanceToNextPageAsync) == "function" then
-				list:AdvanceToNextPageAsync()
 			else
-				break
+				list:AdvanceToNextPageAsync()
 			end
 		end
 
@@ -204,68 +198,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local diagnosticsCard
 	local diagnosticsDefaults = {}
 	local diagnosticsStatusSignature
-	local serverLayoutConfigured = false
-	local friendsLayoutConfigured = false
-	local dashboardLayoutConfigured = false
-
-	local function attachHoverEffect(card)
-		if not card or card:FindFirstChild("HoverOverlay") then
-			return
-		end
-
-		card.ClipsDescendants = true
-
-		local overlay = Instance.new("Frame")
-		overlay.Name = "HoverOverlay"
-		overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		overlay.BackgroundTransparency = 1
-		overlay.Size = UDim2.fromScale(1, 1)
-		overlay.ZIndex = (card.ZIndex or 1) + 1
-		overlay.Visible = false
-		overlay.Parent = card
-
-		local gradient = Instance.new("UIGradient")
-		gradient.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-		}
-		gradient.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0, 1),
-			NumberSequenceKeypoint.new(0.5, 0.25),
-			NumberSequenceKeypoint.new(1, 1)
-		}
-		gradient.Rotation = 35
-		gradient.Offset = Vector2.new(-1, 0)
-		gradient.Parent = overlay
-
-		local activeTween
-		local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-
-		local function playHover()
-			if activeTween then
-				activeTween:Cancel()
-			end
-			overlay.Visible = true
-			gradient.Offset = Vector2.new(-1, 0)
-			activeTween = TweenService:Create(gradient, tweenInfo, {Offset = Vector2.new(1, 0)})
-			activeTween:Play()
-			activeTween.Completed:Connect(function()
-				overlay.Visible = false
-				gradient.Offset = Vector2.new(-1, 0)
-			end)
-		end
-
-		local interact = card:FindFirstChild("Interact", true)
-		if interact and interact:IsA("GuiButton") then
-			interact.MouseEnter:Connect(playHover)
-		else
-			card.InputBegan:Connect(function(input)
-				if input.UserInputType == Enum.UserInputType.MouseMovement then
-					playHover()
-				end
-			end)
-		end
-	end
 
 	local diagnosticsStyles = {
 		clear = {
@@ -307,184 +239,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		}
 	end
 
-	local function configureServerLayout(serverInfo)
-		if serverLayoutConfigured or not serverInfo then
-			return
-		end
-
-		local grid = serverInfo:FindFirstChildOfClass("UIGridLayout")
-		if grid then
-			grid.FillDirection = Enum.FillDirection.Horizontal
-			grid.FillDirectionMaxCells = 2
-			grid.SortOrder = Enum.SortOrder.LayoutOrder
-			grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
-			grid.VerticalAlignment = Enum.VerticalAlignment.Top
-		end
-
-		for _, child in ipairs(serverInfo:GetChildren()) do
-			if child:IsA("Frame") then
-				local valueLabel = child:FindFirstChild("Value")
-				if valueLabel and valueLabel:IsA("TextLabel") then
-					valueLabel.TextWrapped = true
-					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-					valueLabel.TextScaled = false
-					valueLabel.TextSize = 15
-					valueLabel.LineHeight = 1.1
-				end
-
-				local titleLabel = child:FindFirstChild("Title")
-				if titleLabel and titleLabel:IsA("TextLabel") then
-					titleLabel.TextScaled = false
-					titleLabel.TextSize = 14
-					titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-				end
-			end
-		end
-
-		serverLayoutConfigured = true
-	 end
-
-	local function configureFriendsLayout(friendsGui)
-		if friendsLayoutConfigured or not friendsGui then
-			return
-		end
-
-		local grid = friendsGui:FindFirstChildOfClass("UIGridLayout")
-		if grid then
-			grid.FillDirection = Enum.FillDirection.Vertical
-			grid.FillDirectionMaxCells = 1
-			grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
-			grid.VerticalAlignment = Enum.VerticalAlignment.Top
-		end
-
-		for _, child in ipairs(friendsGui:GetChildren()) do
-			if child:IsA("Frame") then
-				local titleLabel = child:FindFirstChild("Title")
-				if titleLabel and titleLabel:IsA("TextLabel") then
-					titleLabel.TextScaled = false
-					titleLabel.TextSize = 14
-					titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-				end
-
-				local valueLabel = child:FindFirstChild("Value")
-				if valueLabel and valueLabel:IsA("TextLabel") then
-					valueLabel.TextScaled = false
-					valueLabel.TextSize = 18
-					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-					valueLabel.TextWrapped = false
-				end
-
-				attachHoverEffect(child)
-			end
-		end
-
-		friendsLayoutConfigured = true
-	end
-
-	local function configureDashboardLayout(dashboard)
-		if dashboardLayoutConfigured or not dashboard then
-			return
-		end
-
-		dashboard.AutomaticSize = Enum.AutomaticSize.Y
-
-		local existingGrid = dashboard:FindFirstChildOfClass("UIGridLayout")
-		if existingGrid then
-			existingGrid:Destroy()
-		end
-
-		local clientCard = dashboard:FindFirstChild("Client")
-		local friendsCard = dashboard:FindFirstChild("Friends")
-		local serverCard = dashboard:FindFirstChild("Server")
-		local discordCard = dashboard:FindFirstChild("Discord")
-
-		if discordCard then
-			discordCard.Visible = false
-			discordCard.Parent = nil
-		end
-
-		local listLayout = dashboard:FindFirstChildOfClass("UIListLayout")
-		if not listLayout then
-			listLayout = Instance.new("UIListLayout")
-			listLayout.FillDirection = Enum.FillDirection.Vertical
-			listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			listLayout.Parent = dashboard
-		end
-		listLayout.Padding = UDim.new(0, 10)
-
-		if clientCard then
-			clientCard.LayoutOrder = 1
-			clientCard.Size = UDim2.new(1, 0, 0, clientCard.Size.Y.Offset)
-			attachHoverEffect(clientCard)
-		end
-
-		local statsContainer = dashboard:FindFirstChild("StatsRow")
-		if not statsContainer then
-			statsContainer = Instance.new("Frame")
-			statsContainer.Name = "StatsRow"
-			statsContainer.BackgroundTransparency = 1
-			statsContainer.Size = UDim2.new(1, 0, 0, 0)
-			statsContainer.AutomaticSize = Enum.AutomaticSize.Y
-			statsContainer.Parent = dashboard
-		end
-		statsContainer.LayoutOrder = 2
-
-		local statsGrid = statsContainer:FindFirstChildOfClass("UIGridLayout")
-		if not statsGrid then
-			statsGrid = Instance.new("UIGridLayout")
-			statsGrid.Name = "StatsGrid"
-			statsGrid.FillDirection = Enum.FillDirection.Horizontal
-			statsGrid.FillDirectionMaxCells = 2
-			statsGrid.SortOrder = Enum.SortOrder.LayoutOrder
-			statsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Left
-			statsGrid.VerticalAlignment = Enum.VerticalAlignment.Top
-			statsGrid.Parent = statsContainer
-		end
-
-		local cardHeight = 0
-		if friendsCard and friendsCard.Size and friendsCard.Size.Y.Offset > cardHeight then
-			cardHeight = friendsCard.Size.Y.Offset
-		end
-		if serverCard and serverCard.Size and serverCard.Size.Y.Offset > cardHeight then
-			cardHeight = serverCard.Size.Y.Offset
-		end
-		if cardHeight <= 0 then
-			cardHeight = 140
-		end
-
-		statsGrid.CellPadding = UDim2.new(0, 10, 0, 0)
-		statsGrid.CellSize = UDim2.new(0.5, -6, 0, cardHeight)
-
-		if friendsCard then
-			friendsCard.AutomaticSize = Enum.AutomaticSize.None
-			friendsCard.LayoutOrder = 1
-			friendsCard.Parent = statsContainer
-			friendsCard.Size = UDim2.new(1, 0, 0, cardHeight)
-			attachHoverEffect(friendsCard)
-		end
-
-		if friendsCard then
-			friendsLayoutConfigured = false
-		end
-
-		if serverCard then
-			serverCard.AutomaticSize = Enum.AutomaticSize.None
-			serverCard.LayoutOrder = 2
-			serverCard.Parent = statsContainer
-			serverCard.Size = UDim2.new(1, 0, 0, cardHeight)
-			serverLayoutConfigured = false
-			attachHoverEffect(serverCard)
-		end
-
-		statsContainer.Size = UDim2.new(1, 0, 0, cardHeight)
-
-		dashboardLayoutConfigured = true
-	end
-
 	local function ensureDiagnosticsCard(serverInfo)
-		configureServerLayout(serverInfo)
-
 		if diagnosticsCard and diagnosticsCard.Parent == serverInfo then
 			return true
 		end
@@ -543,9 +298,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			diagnosticsDefaults.titleColor = titleLabel.TextColor3
 			titleLabel.Text = "Diagnostics"
 			titleLabel.RichText = false
-			titleLabel.TextScaled = false
-			titleLabel.TextSize = 14
-			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		end
 
 		local valueLabel = diagnosticsCard:FindFirstChild("Value")
@@ -562,10 +314,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			valueLabel.TextWrapped = true
 			valueLabel.RichText = false
 			valueLabel.Text = "Clear"
-			valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-			valueLabel.TextScaled = false
-			valueLabel.TextSize = 16
-			valueLabel.LineHeight = 1.15
 		end
 
 		local uiStroke = diagnosticsCard:FindFirstChildWhichIsA("UIStroke")
@@ -661,13 +409,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			uiStroke.Color = style.strokeColor or diagnosticsDefaults.strokeColor or uiStroke.Color
 			uiStroke.Transparency = style.strokeTransparency or diagnosticsDefaults.strokeTransparency or uiStroke.Transparency
 		end
-
-		if diagnosticsCard then
-			diagnosticsCard.Visible = state ~= "clear"
-			if state ~= "clear" then
-				attachHoverEffect(diagnosticsCard)
-			end
-		end
 	end
 
 		coroutine.wrap(function()
@@ -684,19 +425,15 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			break
 		end
 
-		configureDashboardLayout(dashboard)
-
-		local serverInfo = dashboard:FindFirstChild("Server", true)
+		local serverInfo = dashboard:FindFirstChild("Server")
 		if not serverInfo then
 			break
 		end
 
-		local friendsGui = dashboard:FindFirstChild("Friends", true)
+		local friendsGui = dashboard:FindFirstChild("Friends")
 		if not friendsGui then
 			break
 		end
-
-		configureFriendsLayout(friendsGui)
 
 		-- Serverinformationen aktualisieren
 		serverInfo.Players.Value.Text = #Players:GetPlayers() .. " playing"
