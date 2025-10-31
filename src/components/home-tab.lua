@@ -198,6 +198,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local diagnosticsCard
 	local diagnosticsDefaults = {}
 	local diagnosticsStatusSignature
+	local serverLayoutConfigured = false
 
 	local diagnosticsStyles = {
 		clear = {
@@ -239,7 +240,50 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		}
 	end
 
+	local function configureServerLayout(serverInfo)
+		if serverLayoutConfigured or not serverInfo then
+			return
+		end
+
+		local grid = serverInfo:FindFirstChildOfClass("UIGridLayout")
+		if grid then
+			grid.FillDirection = Enum.FillDirection.Horizontal
+			grid.FillDirectionMaxCells = 2
+			grid.SortOrder = Enum.SortOrder.LayoutOrder
+			grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
+			grid.VerticalAlignment = Enum.VerticalAlignment.Top
+			grid.CellPadding = UDim2.new(0, 10, 0, 10)
+			grid.CellSize = UDim2.new(0.5, -10, 0, 96)
+		end
+
+		for _, child in ipairs(serverInfo:GetChildren()) do
+			if child:IsA("Frame") then
+				child.AutomaticSize = Enum.AutomaticSize.None
+				child.Size = UDim2.new(1, 0, 1, 0)
+
+				local valueLabel = child:FindFirstChild("Value")
+				if valueLabel and valueLabel:IsA("TextLabel") then
+					valueLabel.TextWrapped = true
+					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+					valueLabel.TextScaled = false
+					valueLabel.TextSize = 16
+					valueLabel.LineHeight = 1.1
+				end
+
+				local titleLabel = child:FindFirstChild("Title")
+				if titleLabel and titleLabel:IsA("TextLabel") then
+					titleLabel.TextSize = 14
+					titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+				end
+			end
+		end
+
+		serverLayoutConfigured = true
+	 end
+
 	local function ensureDiagnosticsCard(serverInfo)
+		configureServerLayout(serverInfo)
+
 		if diagnosticsCard and diagnosticsCard.Parent == serverInfo then
 			return true
 		end
@@ -298,6 +342,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			diagnosticsDefaults.titleColor = titleLabel.TextColor3
 			titleLabel.Text = "Diagnostics"
 			titleLabel.RichText = false
+			titleLabel.TextSize = 14
+			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		end
 
 		local valueLabel = diagnosticsCard:FindFirstChild("Value")
@@ -314,6 +360,9 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			valueLabel.TextWrapped = true
 			valueLabel.RichText = false
 			valueLabel.Text = "Clear"
+			valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+			valueLabel.TextSize = 16
+			valueLabel.LineHeight = 1.2
 		end
 
 		local uiStroke = diagnosticsCard:FindFirstChildWhichIsA("UIStroke")
