@@ -149,6 +149,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			return
 		end
 
+		configureDashboardLayout(dashboard)
 		configureFriendsLayout(friendsGui)
 
 		friendsCooldown = 25
@@ -202,7 +203,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local diagnosticsStatusSignature
 	local serverLayoutConfigured = false
 	local friendsLayoutConfigured = false
-	local discordLayoutConfigured = false
+	local dashboardLayoutConfigured = false
 
 	local diagnosticsStyles = {
 		clear = {
@@ -316,38 +317,51 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		friendsLayoutConfigured = true
 	end
 
-	local function configureDiscordCard(dashboard)
-		if discordLayoutConfigured or not dashboard then
+	local function configureDashboardLayout(dashboard)
+		if dashboardLayoutConfigured or not dashboard then
 			return
+		end
+
+		local existingGrid = dashboard:FindFirstChildOfClass("UIGridLayout")
+		if existingGrid then
+			existingGrid:Destroy()
+		end
+
+		local listLayout = dashboard:FindFirstChildOfClass("UIListLayout")
+		if not listLayout then
+			listLayout = Instance.new("UIListLayout")
+			listLayout.Padding = UDim.new(0, 10)
+			listLayout.FillDirection = Enum.FillDirection.Vertical
+			listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			listLayout.Parent = dashboard
+		end
+
+		local clientCard = dashboard:FindFirstChild("Client")
+		if clientCard then
+			clientCard.LayoutOrder = 1
+			clientCard.Size = UDim2.new(1, 0, 0, clientCard.Size.Y.Offset)
+		end
+
+		local friendsCard = dashboard:FindFirstChild("Friends")
+		if friendsCard then
+			friendsCard.LayoutOrder = 2
+			friendsCard.Size = UDim2.new(1, 0, 0, friendsCard.Size.Y.Offset)
+		end
+
+		local serverCard = dashboard:FindFirstChild("Server")
+		if serverCard then
+			serverCard.LayoutOrder = 3
+			serverCard.Size = UDim2.new(1, 0, 0, serverCard.Size.Y.Offset)
 		end
 
 		local discordCard = dashboard:FindFirstChild("Discord")
-		if not discordCard then
-			return
+		if discordCard then
+			discordCard.Visible = false
+			discordCard.Parent = nil
 		end
 
-		local layout = dashboard:FindFirstChildOfClass("UIGridLayout")
-		if layout then
-		end
-
-		discordCard.LayoutOrder = 50
-
-		local titleLabel = discordCard:FindFirstChild("Title")
-		if titleLabel and titleLabel:IsA("TextLabel") then
-			titleLabel.TextScaled = false
-			titleLabel.TextSize = 16
-			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-		end
-
-		local valueLabel = discordCard:FindFirstChild("Value")
-		if valueLabel and valueLabel:IsA("TextLabel") then
-			valueLabel.TextScaled = false
-			valueLabel.TextSize = 18
-			valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-			valueLabel.TextWrapped = true
-		end
-
-		discordLayoutConfigured = true
+		dashboardLayoutConfigured = true
 	end
 
 	local function ensureDiagnosticsCard(serverInfo)
@@ -529,6 +543,10 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			uiStroke.Color = style.strokeColor or diagnosticsDefaults.strokeColor or uiStroke.Color
 			uiStroke.Transparency = style.strokeTransparency or diagnosticsDefaults.strokeTransparency or uiStroke.Transparency
 		end
+
+		if diagnosticsCard then
+			diagnosticsCard.Visible = state ~= "clear"
+		end
 	end
 
 		coroutine.wrap(function()
@@ -545,6 +563,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			break
 		end
 
+		configureDashboardLayout(dashboard)
+
 		local serverInfo = dashboard:FindFirstChild("Server")
 		if not serverInfo then
 			break
@@ -556,7 +576,6 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		end
 
 		configureFriendsLayout(friendsGui)
-		configureDiscordCard(dashboard)
 
 		-- Serverinformationen aktualisieren
 		serverInfo.Players.Value.Text = #Players:GetPlayers() .. " playing"
