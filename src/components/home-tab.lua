@@ -2,6 +2,7 @@
 
 local Players     = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
 
 
 return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween, Release, isStudio)
@@ -207,6 +208,65 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local friendsLayoutConfigured = false
 	local dashboardLayoutConfigured = false
 
+	local function attachHoverEffect(card)
+		if not card or card:FindFirstChild("HoverOverlay") then
+			return
+		end
+
+		card.ClipsDescendants = true
+
+		local overlay = Instance.new("Frame")
+		overlay.Name = "HoverOverlay"
+		overlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		overlay.BackgroundTransparency = 1
+		overlay.Size = UDim2.fromScale(1, 1)
+		overlay.ZIndex = (card.ZIndex or 1) + 1
+		overlay.Visible = false
+		overlay.Parent = card
+
+		local gradient = Instance.new("UIGradient")
+		gradient.Color = ColorSequence.new{
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+		}
+		gradient.Transparency = NumberSequence.new{
+			NumberSequenceKeypoint.new(0, 1),
+			NumberSequenceKeypoint.new(0.5, 0.25),
+			NumberSequenceKeypoint.new(1, 1)
+		}
+		gradient.Rotation = 35
+		gradient.Offset = Vector2.new(-1, 0)
+		gradient.Parent = overlay
+
+		local activeTween
+		local tweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+
+		local function playHover()
+			if activeTween then
+				activeTween:Cancel()
+			end
+			overlay.Visible = true
+			gradient.Offset = Vector2.new(-1, 0)
+			activeTween = TweenService:Create(gradient, tweenInfo, {Offset = Vector2.new(1, 0)})
+			activeTween:Play()
+			activeTween.Completed:Connect(function()
+				overlay.Visible = false
+				gradient.Offset = Vector2.new(-1, 0)
+			end)
+		end
+
+		local interact = card:FindFirstChild("Interact", true)
+		if interact and interact:IsA("GuiButton") then
+			interact.MouseEnter:Connect(playHover)
+		else
+			card.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement then
+					playHover()
+				end
+			end)
+		end
+	end
+
 	local diagnosticsStyles = {
 		clear = {
 			label = "All clear - no performance issues detected.",
@@ -313,6 +373,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
 					valueLabel.TextWrapped = false
 				end
+
+				attachHoverEffect(child)
 			end
 		end
 
@@ -323,6 +385,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		if dashboardLayoutConfigured or not dashboard then
 			return
 		end
+
+		dashboard.AutomaticSize = Enum.AutomaticSize.Y
 
 		local existingGrid = dashboard:FindFirstChildOfClass("UIGridLayout")
 		if existingGrid then
@@ -342,16 +406,17 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		local listLayout = dashboard:FindFirstChildOfClass("UIListLayout")
 		if not listLayout then
 			listLayout = Instance.new("UIListLayout")
-			listLayout.Padding = UDim.new(0, 10)
 			listLayout.FillDirection = Enum.FillDirection.Vertical
 			listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			listLayout.Parent = dashboard
 		end
+		listLayout.Padding = UDim.new(0, 10)
 
 		if clientCard then
 			clientCard.LayoutOrder = 1
 			clientCard.Size = UDim2.new(1, 0, 0, clientCard.Size.Y.Offset)
+			attachHoverEffect(clientCard)
 		end
 
 		local statsContainer = dashboard:FindFirstChild("StatsRow")
@@ -396,6 +461,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			friendsCard.LayoutOrder = 1
 			friendsCard.Parent = statsContainer
 			friendsCard.Size = UDim2.new(1, 0, 0, cardHeight)
+			attachHoverEffect(friendsCard)
 		end
 
 		if friendsCard then
@@ -408,6 +474,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			serverCard.Parent = statsContainer
 			serverCard.Size = UDim2.new(1, 0, 0, cardHeight)
 			serverLayoutConfigured = false
+			attachHoverEffect(serverCard)
 		end
 
 		statsContainer.Size = UDim2.new(1, 0, 0, cardHeight)
@@ -597,6 +664,9 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		if diagnosticsCard then
 			diagnosticsCard.Visible = state ~= "clear"
+			if state ~= "clear" then
+				attachHoverEffect(diagnosticsCard)
+			end
 		end
 	end
 
