@@ -149,6 +149,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			return
 		end
 
+		configureFriendsLayout(friendsGui)
+
 		friendsCooldown = 25
 
 		local playersFriends = {}
@@ -199,6 +201,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 	local diagnosticsDefaults = {}
 	local diagnosticsStatusSignature
 	local serverLayoutConfigured = false
+	local friendsLayoutConfigured = false
+	local discordLayoutConfigured = false
 
 	local diagnosticsStyles = {
 		clear = {
@@ -280,6 +284,79 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		serverLayoutConfigured = true
 	 end
+
+	local function configureFriendsLayout(friendsGui)
+		if friendsLayoutConfigured or not friendsGui then
+			return
+		end
+
+		local grid = friendsGui:FindFirstChildOfClass("UIGridLayout")
+		if grid then
+			grid.FillDirection = Enum.FillDirection.Vertical
+			grid.FillDirectionMaxCells = 1
+			grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
+			grid.VerticalAlignment = Enum.VerticalAlignment.Top
+			grid.CellPadding = UDim2.new(0, 8, 0, 6)
+			grid.CellSize = UDim2.new(1, -4, 0, 48)
+		end
+
+		for _, child in ipairs(friendsGui:GetChildren()) do
+			if child:IsA("Frame") then
+				child.AutomaticSize = Enum.AutomaticSize.None
+				child.Size = UDim2.new(1, 0, 1, 0)
+
+				local titleLabel = child:FindFirstChild("Title")
+				if titleLabel and titleLabel:IsA("TextLabel") then
+					titleLabel.TextSize = 14
+					titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+				end
+
+				local valueLabel = child:FindFirstChild("Value")
+				if valueLabel and valueLabel:IsA("TextLabel") then
+					valueLabel.TextScaled = false
+					valueLabel.TextSize = 16
+					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+				end
+			end
+		end
+
+		friendsLayoutConfigured = true
+	end
+
+	local function configureDiscordCard(dashboard)
+		if discordLayoutConfigured or not dashboard then
+			return
+		end
+
+		local discordCard = dashboard:FindFirstChild("Discord")
+		if not discordCard then
+			return
+		end
+
+		local layout = dashboard:FindFirstChildOfClass("UIGridLayout")
+		if layout then
+			layout.CellPadding = UDim2.new(0, 12, 0, 12)
+			layout.CellSize = UDim2.new(0.5, -12, 0, 108)
+		end
+
+		discordCard.LayoutOrder = 50
+		discordCard.AutomaticSize = Enum.AutomaticSize.None
+		discordCard.Size = UDim2.new(1, 0, 0, 108)
+
+		local titleLabel = discordCard:FindFirstChild("Title")
+		if titleLabel and titleLabel:IsA("TextLabel") then
+			titleLabel.TextSize = 15
+			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+		end
+
+		local valueLabel = discordCard:FindFirstChild("Value")
+		if valueLabel and valueLabel:IsA("TextLabel") then
+			valueLabel.TextSize = 17
+			valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+		end
+
+		discordLayoutConfigured = true
+	end
 
 	local function ensureDiagnosticsCard(serverInfo)
 		configureServerLayout(serverInfo)
@@ -483,6 +560,9 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		if not friendsGui then
 			break
 		end
+
+		configureFriendsLayout(friendsGui)
+		configureDiscordCard(dashboard)
 
 		-- Serverinformationen aktualisieren
 		serverInfo.Players.Value.Text = #Players:GetPlayers() .. " playing"
