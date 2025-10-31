@@ -144,7 +144,7 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		local detailsHolder = HomeTabPage:FindFirstChild("detailsholder")
 		local dashboard = detailsHolder and detailsHolder:FindFirstChild("dashboard")
-		local friendsGui = dashboard and dashboard:FindFirstChild("Friends")
+		local friendsGui = dashboard and dashboard:FindFirstChild("Friends", true)
 		if not friendsGui then
 			return
 		end
@@ -165,8 +165,10 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			end
 			if list.IsFinished then
 				break
-			else
+			elseif typeof(list.AdvanceToNextPageAsync) == "function" then
 				list:AdvanceToNextPageAsync()
+			else
+				break
 			end
 		end
 
@@ -327,6 +329,16 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			existingGrid:Destroy()
 		end
 
+		local clientCard = dashboard:FindFirstChild("Client")
+		local friendsCard = dashboard:FindFirstChild("Friends")
+		local serverCard = dashboard:FindFirstChild("Server")
+		local discordCard = dashboard:FindFirstChild("Discord")
+
+		if discordCard then
+			discordCard.Visible = false
+			discordCard.Parent = nil
+		end
+
 		local listLayout = dashboard:FindFirstChildOfClass("UIListLayout")
 		if not listLayout then
 			listLayout = Instance.new("UIListLayout")
@@ -337,29 +349,68 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			listLayout.Parent = dashboard
 		end
 
-		local clientCard = dashboard:FindFirstChild("Client")
 		if clientCard then
 			clientCard.LayoutOrder = 1
 			clientCard.Size = UDim2.new(1, 0, 0, clientCard.Size.Y.Offset)
 		end
 
-		local friendsCard = dashboard:FindFirstChild("Friends")
+		local statsContainer = dashboard:FindFirstChild("StatsRow")
+		if not statsContainer then
+			statsContainer = Instance.new("Frame")
+			statsContainer.Name = "StatsRow"
+			statsContainer.BackgroundTransparency = 1
+			statsContainer.Size = UDim2.new(1, 0, 0, 0)
+			statsContainer.AutomaticSize = Enum.AutomaticSize.Y
+			statsContainer.Parent = dashboard
+		end
+		statsContainer.LayoutOrder = 2
+
+		local statsGrid = statsContainer:FindFirstChildOfClass("UIGridLayout")
+		if not statsGrid then
+			statsGrid = Instance.new("UIGridLayout")
+			statsGrid.Name = "StatsGrid"
+			statsGrid.FillDirection = Enum.FillDirection.Horizontal
+			statsGrid.FillDirectionMaxCells = 2
+			statsGrid.SortOrder = Enum.SortOrder.LayoutOrder
+			statsGrid.HorizontalAlignment = Enum.HorizontalAlignment.Left
+			statsGrid.VerticalAlignment = Enum.VerticalAlignment.Top
+			statsGrid.Parent = statsContainer
+		end
+
+		local cardHeight = 0
+		if friendsCard and friendsCard.Size and friendsCard.Size.Y.Offset > cardHeight then
+			cardHeight = friendsCard.Size.Y.Offset
+		end
+		if serverCard and serverCard.Size and serverCard.Size.Y.Offset > cardHeight then
+			cardHeight = serverCard.Size.Y.Offset
+		end
+		if cardHeight <= 0 then
+			cardHeight = 140
+		end
+
+		statsGrid.CellPadding = UDim2.new(0, 10, 0, 0)
+		statsGrid.CellSize = UDim2.new(0.5, -6, 0, cardHeight)
+
 		if friendsCard then
-			friendsCard.LayoutOrder = 2
-			friendsCard.Size = UDim2.new(1, 0, 0, friendsCard.Size.Y.Offset)
+			friendsCard.AutomaticSize = Enum.AutomaticSize.None
+			friendsCard.LayoutOrder = 1
+			friendsCard.Parent = statsContainer
+			friendsCard.Size = UDim2.new(1, 0, 0, cardHeight)
 		end
 
-		local serverCard = dashboard:FindFirstChild("Server")
+		if friendsCard then
+			friendsLayoutConfigured = false
+		end
+
 		if serverCard then
-			serverCard.LayoutOrder = 3
-			serverCard.Size = UDim2.new(1, 0, 0, serverCard.Size.Y.Offset)
+			serverCard.AutomaticSize = Enum.AutomaticSize.None
+			serverCard.LayoutOrder = 2
+			serverCard.Parent = statsContainer
+			serverCard.Size = UDim2.new(1, 0, 0, cardHeight)
+			serverLayoutConfigured = false
 		end
 
-		local discordCard = dashboard:FindFirstChild("Discord")
-		if discordCard then
-			discordCard.Visible = false
-			discordCard.Parent = nil
-		end
+		statsContainer.Size = UDim2.new(1, 0, 0, cardHeight)
 
 		dashboardLayoutConfigured = true
 	end
@@ -565,12 +616,12 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		configureDashboardLayout(dashboard)
 
-		local serverInfo = dashboard:FindFirstChild("Server")
+		local serverInfo = dashboard:FindFirstChild("Server", true)
 		if not serverInfo then
 			break
 		end
 
-		local friendsGui = dashboard:FindFirstChild("Friends")
+		local friendsGui = dashboard:FindFirstChild("Friends", true)
 		if not friendsGui then
 			break
 		end
