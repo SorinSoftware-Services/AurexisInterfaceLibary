@@ -256,27 +256,28 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			grid.SortOrder = Enum.SortOrder.LayoutOrder
 			grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
 			grid.VerticalAlignment = Enum.VerticalAlignment.Top
-			grid.CellPadding = UDim2.new(0, 10, 0, 10)
-			grid.CellSize = UDim2.new(0.5, -10, 0, 96)
+			grid.CellPadding = UDim2.new(0, 8, 0, 8)
+			grid.CellSize = UDim2.new(0.5, -12, 0, 72)
 		end
 
 		for _, child in ipairs(serverInfo:GetChildren()) do
 			if child:IsA("Frame") then
 				child.AutomaticSize = Enum.AutomaticSize.None
-				child.Size = UDim2.new(1, 0, 1, 0)
+				child.Size = UDim2.new(1, 0, 0, 72)
 
 				local valueLabel = child:FindFirstChild("Value")
 				if valueLabel and valueLabel:IsA("TextLabel") then
 					valueLabel.TextWrapped = true
 					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
 					valueLabel.TextScaled = false
-					valueLabel.TextSize = 16
-					valueLabel.LineHeight = 1.1
+					valueLabel.TextSize = 15
+					valueLabel.LineHeight = 1.05
 				end
 
 				local titleLabel = child:FindFirstChild("Title")
 				if titleLabel and titleLabel:IsA("TextLabel") then
-					titleLabel.TextSize = 14
+					titleLabel.TextScaled = false
+					titleLabel.TextSize = 13
 					titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 				end
 			end
@@ -296,26 +297,28 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			grid.FillDirectionMaxCells = 1
 			grid.HorizontalAlignment = Enum.HorizontalAlignment.Left
 			grid.VerticalAlignment = Enum.VerticalAlignment.Top
-			grid.CellPadding = UDim2.new(0, 8, 0, 6)
-			grid.CellSize = UDim2.new(1, -4, 0, 48)
+			grid.CellPadding = UDim2.new(0, 6, 0, 6)
+			grid.CellSize = UDim2.new(1, -6, 0, 48)
 		end
 
 		for _, child in ipairs(friendsGui:GetChildren()) do
 			if child:IsA("Frame") then
 				child.AutomaticSize = Enum.AutomaticSize.None
-				child.Size = UDim2.new(1, 0, 1, 0)
+				child.Size = UDim2.new(1, 0, 0, 48)
 
 				local titleLabel = child:FindFirstChild("Title")
 				if titleLabel and titleLabel:IsA("TextLabel") then
-					titleLabel.TextSize = 14
+					titleLabel.TextScaled = false
+					titleLabel.TextSize = 13
 					titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 				end
 
 				local valueLabel = child:FindFirstChild("Value")
 				if valueLabel and valueLabel:IsA("TextLabel") then
 					valueLabel.TextScaled = false
-					valueLabel.TextSize = 16
+					valueLabel.TextSize = 15
 					valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+					valueLabel.TextWrapped = false
 				end
 			end
 		end
@@ -335,24 +338,27 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 		local layout = dashboard:FindFirstChildOfClass("UIGridLayout")
 		if layout then
-			layout.CellPadding = UDim2.new(0, 12, 0, 12)
-			layout.CellSize = UDim2.new(0.5, -12, 0, 108)
+			layout.CellPadding = UDim2.new(0, 10, 0, 10)
+			layout.CellSize = UDim2.new(0.5, -12, 0, 90)
 		end
 
 		discordCard.LayoutOrder = 50
 		discordCard.AutomaticSize = Enum.AutomaticSize.None
-		discordCard.Size = UDim2.new(1, 0, 0, 108)
+		discordCard.Size = UDim2.new(1, 0, 0, 90)
 
 		local titleLabel = discordCard:FindFirstChild("Title")
 		if titleLabel and titleLabel:IsA("TextLabel") then
-			titleLabel.TextSize = 15
+			titleLabel.TextScaled = false
+			titleLabel.TextSize = 14
 			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		end
 
 		local valueLabel = discordCard:FindFirstChild("Value")
 		if valueLabel and valueLabel:IsA("TextLabel") then
-			valueLabel.TextSize = 17
+			valueLabel.TextScaled = false
+			valueLabel.TextSize = 16
 			valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+			valueLabel.TextWrapped = true
 		end
 
 		discordLayoutConfigured = true
@@ -419,7 +425,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			diagnosticsDefaults.titleColor = titleLabel.TextColor3
 			titleLabel.Text = "Diagnostics"
 			titleLabel.RichText = false
-			titleLabel.TextSize = 14
+			titleLabel.TextScaled = false
+			titleLabel.TextSize = 13
 			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		end
 
@@ -438,8 +445,9 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 			valueLabel.RichText = false
 			valueLabel.Text = "Clear"
 			valueLabel.TextXAlignment = Enum.TextXAlignment.Left
-			valueLabel.TextSize = 16
-			valueLabel.LineHeight = 1.2
+			valueLabel.TextScaled = false
+			valueLabel.TextSize = 15
+			valueLabel.LineHeight = 1.1
 		end
 
 		local uiStroke = diagnosticsCard:FindFirstChildWhichIsA("UIStroke")
