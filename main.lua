@@ -952,12 +952,6 @@ for index, button in ipairs(orderedButtons) do
 	end
 end
 
-if isTouchContext() then
-	task.defer(function()
-		snapWindowToViewport(Main)
-	end)
-end
-
 local function scaleUDim2(size: UDim2, multiplier: number): UDim2
 	return UDim2.new(
 		size.X.Scale * multiplier,
@@ -1192,6 +1186,12 @@ local function snapWindowToViewport(window)
 			shadowHolder.Position = newPosition
 		end
 	end
+end
+
+if isTouchContext() then
+	task.defer(function()
+		snapWindowToViewport(Main)
+	end)
 end
 
 local mobileKeySystemConfigured = false
