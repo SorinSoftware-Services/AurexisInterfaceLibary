@@ -74,7 +74,12 @@ end
 -- Universal remote require helper
 local function requireRemote(path)
 	local ok, result = pcall(function()
-		return loadstring(game:HttpGet(BASE_URL .. path))()
+		local source = game:HttpGet(BASE_URL .. path)
+		source = source:gsub("\u{FEFF}", "")
+		source = source:gsub("\u{00A0}", " ")
+		source = source:gsub("\u{2028}", "\n")
+		source = source:gsub("\u{2029}", "\n")
+		return loadstring(source, "@" .. path)()
 	end)
 	if ok then
 		return result
