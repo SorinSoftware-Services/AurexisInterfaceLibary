@@ -63,6 +63,27 @@ workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
 	Camera = workspace.CurrentCamera
 end)
 
+local function sanitizeSource(source)
+	if typeof(source) ~= "string" then
+		return source
+	end
+
+	source = source:gsub("\u{FEFF}", "")
+	source = source:gsub("\u{00A0}", " ")
+	source = source:gsub("\u{2028}", "\n")
+	source = source:gsub("\u{2029}", "\n")
+
+	return source
+end
+
+local function safeLoadstring(source, chunkName)
+	local sanitized = sanitizeSource(source)
+	if chunkName ~= nil then
+		return loadstring(sanitized, chunkName)
+	end
+	return loadstring(sanitized)
+end
+
 local isStudio
 local website = "https://scripts.sorinservice.online"
 
@@ -75,11 +96,7 @@ end
 local function requireRemote(path)
 	local ok, result = pcall(function()
 		local source = game:HttpGet(BASE_URL .. path)
-		source = source:gsub("\u{FEFF}", "")
-		source = source:gsub("\u{00A0}", " ")
-		source = source:gsub("\u{2028}", "\n")
-		source = source:gsub("\u{2029}", "\n")
-		return loadstring(source, "@" .. path)()
+		return safeLoadstring(source, "@" .. path)()
 	end)
 	if ok then
 		return result
@@ -115,7 +132,7 @@ function Aurexis:GetIcon(icon, source)
 	elseif source == "Lucide" then
 		-- full credit to latte softworks :)
 		local iconData = not isStudio and game:HttpGet("https://raw.githubusercontent.com/latte-soft/lucide-roblox/refs/heads/master/lib/Icons.luau")
-		local icons = isStudio and IconModule.Lucide or loadstring(iconData)()
+		local icons = isStudio and IconModule.Lucide or safeLoadstring(iconData)()
 		if not isStudio then
 			icon = string.match(string.lower(icon), "^%s*(.*)%s*$") :: string
 			local sizedicons = icons['48px']
