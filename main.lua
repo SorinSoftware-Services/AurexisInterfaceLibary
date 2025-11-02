@@ -36,7 +36,7 @@ by Nebula Softworks
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
-local Release = "Pre Release [v 0.2.0]"
+local Release = "Pre Release [v 0.2]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
@@ -58,6 +58,10 @@ local Player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
+
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+	Camera = workspace.CurrentCamera
+end)
 
 local isStudio
 local website = "https://scripts.sorinservice.online"
@@ -948,6 +952,12 @@ for index, button in ipairs(orderedButtons) do
 	end
 end
 
+if isTouchContext() then
+	task.defer(function()
+		snapWindowToViewport(Main)
+	end)
+end
+
 local function scaleUDim2(size: UDim2, multiplier: number): UDim2
 	return UDim2.new(
 		size.X.Scale * multiplier,
@@ -1122,6 +1132,205 @@ local Tabs = Navigation.Tabs
 local Notifications = AurexisUI.Notifications
 local KeySystem : Frame = Main.KeySystem
 
+local function isTouchContext()
+	return UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+end
+
+local function clampOffsetsToViewport(window, scaleX, scaleY, offsetX, offsetY)
+	local parent = window.Parent
+	if not parent then
+		return offsetX, offsetY
+	end
+
+	local parentSize = parent.AbsoluteSize
+	if parentSize.X <= 0 or parentSize.Y <= 0 then
+		return offsetX, offsetY
+	end
+
+	local size = window.AbsoluteSize
+	local anchor = window.AnchorPoint or Vector2.new(0, 0)
+	local anchorOffsetX = size.X * anchor.X
+	local anchorOffsetY = size.Y * anchor.Y
+	local margin = 16
+
+	local absoluteX = parentSize.X * scaleX + offsetX - anchorOffsetX
+	local absoluteY = parentSize.Y * scaleY + offsetY - anchorOffsetY
+
+	local maxX = parentSize.X - size.X - margin
+	local maxY = parentSize.Y - size.Y - margin
+
+	if maxX < margin then
+		maxX = margin
+	end
+
+	if maxY < margin then
+		maxY = margin
+	end
+
+	absoluteX = math.clamp(absoluteX, margin, maxX)
+	absoluteY = math.clamp(absoluteY, margin, maxY)
+
+	offsetX = absoluteX + anchorOffsetX - parentSize.X * scaleX
+	offsetY = absoluteY + anchorOffsetY - parentSize.Y * scaleY
+
+	return offsetX, offsetY
+end
+
+local function snapWindowToViewport(window)
+	if not window then
+		return
+	end
+
+	local position = window.Position
+	local clampedX, clampedY = clampOffsetsToViewport(window, position.X.Scale, position.Y.Scale, position.X.Offset, position.Y.Offset)
+
+	if clampedX ~= position.X.Offset or clampedY ~= position.Y.Offset then
+		local newPosition = UDim2.new(position.X.Scale, clampedX, position.Y.Scale, clampedY)
+		window.Position = newPosition
+		local shadowHolder = window.Parent and window.Parent:FindFirstChild("ShadowHolder")
+		if shadowHolder then
+			shadowHolder.Position = newPosition
+		end
+	end
+end
+
+local mobileKeySystemConfigured = false
+
+local function configureKeySystemForTouch()
+	if mobileKeySystemConfigured or not KeySystem or not isTouchContext() then
+		return
+	end
+
+	mobileKeySystemConfigured = true
+
+	local mobileScale = KeySystem:FindFirstChild("MobileUIScale")
+	if not mobileScale then
+		mobileScale = Instance.new("UIScale")
+		mobileScale.Name = "MobileUIScale"
+		mobileScale.Parent = KeySystem
+	end
+
+	local mobilePadding = KeySystem:FindFirstChild("MobilePadding")
+	if not mobilePadding then
+		mobilePadding = Instance.new("UIPadding")
+		mobilePadding.Name = "MobilePadding"
+		mobilePadding.PaddingTop = UDim.new(0, 12)
+		mobilePadding.PaddingBottom = UDim.new(0, 12)
+		mobilePadding.PaddingLeft = UDim.new(0, 12)
+		mobilePadding.PaddingRight = UDim.new(0, 12)
+		mobilePadding.Parent = KeySystem
+	end
+
+	KeySystem.AnchorPoint = Vector2.new(0.5, 0.5)
+	KeySystem.Position = UDim2.fromScale(0.5, 0.5)
+	KeySystem.AutomaticSize = Enum.AutomaticSize.None
+
+	local viewportConnection: RBXScriptConnection? = nil
+
+	local function resizeKeySystem()
+		local viewport = Camera and Camera.ViewportSize or Vector2.new(1280, 720)
+		local availableWidth = math.max(320, viewport.X - 48)
+		local availableHeight = math.max(260, viewport.Y - 72)
+		local size = KeySystem.AbsoluteSize
+
+		if size.X == 0 or size.Y == 0 then
+			task.defer(resizeKeySystem)
+			return
+		end
+
+		local currentScale = mobileScale.Scale
+		if currentScale == 0 then
+			currentScale = 1
+		end
+
+		local baseWidth = size.X / currentScale
+		local baseHeight = size.Y / currentScale
+
+		if baseWidth == 0 or baseHeight == 0 then
+			return
+		end
+
+		local scaleFactor = math.min(1, availableWidth / baseWidth, availableHeight / baseHeight)
+		mobileScale.Scale = scaleFactor
+	end
+
+	local function bindViewportSignal()
+		if viewportConnection then
+			viewportConnection:Disconnect()
+			viewportConnection = nil
+		end
+
+		if Camera then
+			viewportConnection = Camera:GetPropertyChangedSignal("ViewportSize"):Connect(resizeKeySystem)
+		end
+	end
+
+	resizeKeySystem()
+
+	bindViewportSignal()
+
+	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+		Camera = workspace.CurrentCamera
+		bindViewportSignal()
+		task.defer(resizeKeySystem)
+	end)
+
+	KeySystem:GetPropertyChangedSignal("Visible"):Connect(function()
+		if KeySystem.Visible then
+			task.defer(resizeKeySystem)
+		end
+	end)
+
+	KeySystem:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		if KeySystem.Visible then
+			task.defer(resizeKeySystem)
+		end
+	end)
+
+	local actionRoot = KeySystem:FindFirstChild("Action")
+	if actionRoot then
+		actionRoot.AutomaticSize = Enum.AutomaticSize.XY
+		actionRoot.ClipsDescendants = false
+		actionRoot.AnchorPoint = Vector2.new(0.5, actionRoot.AnchorPoint.Y)
+		actionRoot.Position = UDim2.new(0.5, 0, actionRoot.Position.Y.Scale, actionRoot.Position.Y.Offset)
+		actionRoot.Size = UDim2.new(1, -24, actionRoot.Size.Y.Scale, actionRoot.Size.Y.Offset)
+
+		local layout = actionRoot:FindFirstChild("MobileActionLayout")
+		if not layout then
+			layout = actionRoot:FindFirstChildWhichIsA("UIListLayout")
+			if not layout then
+				layout = Instance.new("UIListLayout")
+			end
+			layout.Name = "MobileActionLayout"
+			layout.Parent = actionRoot
+		end
+
+		layout.FillDirection = Enum.FillDirection.Vertical
+		layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		layout.VerticalAlignment = Enum.VerticalAlignment.Center
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		layout.Padding = UDim.new(0, 8)
+
+		for _, child in ipairs(actionRoot:GetChildren()) do
+			if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("ImageButton") then
+				child.AutomaticSize = Enum.AutomaticSize.XY
+				child.Size = UDim2.new(1, 0, child.Size.Y.Scale, child.Size.Y.Offset)
+			end
+		end
+	end
+
+	local inputRoot = KeySystem:FindFirstChild("Input")
+	if inputRoot then
+		inputRoot.AnchorPoint = Vector2.new(0.5, inputRoot.AnchorPoint.Y)
+		inputRoot.Position = UDim2.new(0.5, 0, inputRoot.Position.Y.Scale, inputRoot.Position.Y.Offset)
+		inputRoot.Size = UDim2.new(1, -24, inputRoot.Size.Y.Scale, inputRoot.Size.Y.Offset)
+	end
+end
+
+if isTouchContext() then
+	task.defer(configureKeySystemForTouch)
+end
+
 -- local function LoadConfiguration(Configuration, autoload)
 -- 	local Data = HttpService:JSONDecode(Configuration)
 -- 	local changed
@@ -1209,6 +1418,8 @@ local KeySystem : Frame = Main.KeySystem
 local function Draggable(Bar, Window, enableTaptic, tapticOffset)
 	pcall(function()
 		local Dragging, DragInput, MousePos, FramePos
+		local dragBarOffset = {x = 0, y = 0}
+		local dragBarScale = {x = 0, y = 0}
 
 		local function connectFunctions()
 			if dragBar and enableTaptic then
@@ -1233,6 +1444,25 @@ local function Draggable(Bar, Window, enableTaptic, tapticOffset)
 				Dragging = true
 				MousePos = Input.Position
 				FramePos = Window.Position
+
+				if dragBar then
+					local barPosition = dragBar.Position
+					dragBarOffset = {
+						x = barPosition.X.Offset - Window.Position.X.Offset,
+						y = barPosition.Y.Offset - Window.Position.Y.Offset
+					}
+					dragBarScale = {
+						x = barPosition.X.Scale - Window.Position.X.Scale,
+						y = barPosition.Y.Scale - Window.Position.Y.Scale
+					}
+
+					if tapticOffset and dragBarOffset.y == 0 and dragBarScale.y == 0 then
+						dragBarOffset.y = tapticOffset
+					end
+				else
+					dragBarOffset = {x = 0, y = tapticOffset or 0}
+					dragBarScale = {x = 0, y = 0}
+				end
 
 				if enableTaptic then
 					TweenService:Create(dragBarCosmetic, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0, 110, 0, 4), BackgroundTransparency = 0}):Play()
@@ -1261,11 +1491,28 @@ local function Draggable(Bar, Window, enableTaptic, tapticOffset)
 			if Input == DragInput and Dragging then
 				local Delta = Input.Position - MousePos
 
-				local newMainPosition = UDim2.new(FramePos.X.Scale, FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y)
+				local targetOffsetX = FramePos.X.Offset + Delta.X
+				local targetOffsetY = FramePos.Y.Offset + Delta.Y
+
+				if isTouchContext() then
+					targetOffsetX, targetOffsetY = clampOffsetsToViewport(Window, FramePos.X.Scale, FramePos.Y.Scale, targetOffsetX, targetOffsetY)
+				end
+
+				local newMainPosition = UDim2.new(FramePos.X.Scale, targetOffsetX, FramePos.Y.Scale, targetOffsetY)
 				TweenService:Create(Window, TweenInfo.new(0.35, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Position = newMainPosition}):Play()
 
+				local shadowHolder = Window.Parent and Window.Parent:FindFirstChild("ShadowHolder")
+				if shadowHolder then
+					shadowHolder.Position = newMainPosition
+				end
+
 				if dragBar then
-					local newDragBarPosition = UDim2.new(FramePos.X.Scale, FramePos.X.Offset + Delta.X, FramePos.Y.Scale, FramePos.Y.Offset + Delta.Y + 240)
+					local newDragBarPosition = UDim2.new(
+						FramePos.X.Scale + dragBarScale.x,
+						targetOffsetX + dragBarOffset.x,
+						FramePos.Y.Scale + dragBarScale.y,
+						targetOffsetY + dragBarOffset.y
+					)
 					dragBar.Position = newDragBarPosition
 				end
 			end
@@ -1340,6 +1587,12 @@ local function Unhide(Window, currentTab)
 		end
 	end
 
+	if isTouchContext() then
+		task.defer(function()
+			snapWindowToViewport(Window)
+		end)
+	end
+
 end
 
 local MainSize
@@ -1360,6 +1613,11 @@ local function Maximise(Window)
 	tween(Window, {Size = MainSize})
 	Window.Elements.Visible = true
 	Window.Navigation.Visible = true
+	if isTouchContext() then
+		task.defer(function()
+			snapWindowToViewport(Window)
+		end)
+	end
 end
 
 local function Minimize(Window)
@@ -1957,6 +2215,9 @@ FirstTab = false
 		Unhide(Main, Window.CurrentTab)
 		dragBar.Visible = true
 		Window.State = true
+		if isTouchContext() then
+			snapWindowToViewport(Main)
+		end
 		AurexisUI.MobileSupport.Visible = false
 	end)
 
