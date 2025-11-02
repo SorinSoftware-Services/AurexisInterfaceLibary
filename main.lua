@@ -1921,6 +1921,98 @@ function Aurexis:CreateWindow(WindowSettings)
 	Draggable(AurexisUI.MobileSupport, AurexisUI.MobileSupport)
 	if dragBar then Draggable(dragInteract, Main, true, 255) end
 
+	local function ensureMobileCenterButton()
+		if not isTouchContext() then
+			return nil
+		end
+
+		local existing = AurexisUI.MobileSupport:FindFirstChild("CenterWindow")
+		if existing and existing:IsA("Frame") then
+			return existing
+		end
+
+		local container = Instance.new("Frame")
+		container.Name = "CenterWindow"
+		container.AnchorPoint = Vector2.new(0.5, 1)
+		container.Position = UDim2.new(0.5, 0, 1, -120)
+		container.Size = UDim2.new(0, 0, 0, 0)
+		container.BackgroundTransparency = 1
+		container.Visible = false
+		container.ZIndex = Main.ZIndex + 5
+		container.Parent = AurexisUI.MobileSupport
+
+		local background = Instance.new("Frame")
+		background.Name = "Background"
+		background.AnchorPoint = Vector2.new(0.5, 0.5)
+		background.Position = UDim2.fromScale(0.5, 0.5)
+		background.Size = UDim2.new(0, 140, 0, 36)
+		background.BackgroundColor3 = Color3.fromRGB(37, 34, 43)
+		background.BackgroundTransparency = 0.25
+		background.ZIndex = container.ZIndex
+		background.Parent = container
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0, 12)
+		corner.Parent = background
+
+		local stroke = Instance.new("UIStroke")
+		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		stroke.Color = Color3.fromRGB(90, 110, 180)
+		stroke.Thickness = 1
+		stroke.Transparency = 0.4
+		stroke.Parent = background
+
+		local button = Instance.new("TextButton")
+		button.Name = "Center"
+		button.AnchorPoint = Vector2.new(0.5, 0.5)
+		button.Position = UDim2.fromScale(0.5, 0.5)
+		button.Size = UDim2.new(1, -8, 1, -8)
+		button.BackgroundTransparency = 1
+		button.Text = "Center window"
+		button.Font = Enum.Font.GothamMedium
+		button.TextSize = 16
+		button.TextColor3 = Color3.fromRGB(230, 235, 255)
+		button.AutoButtonColor = false
+		button.ZIndex = background.ZIndex + 1
+		button.Parent = container
+
+		button.MouseEnter:Connect(function()
+			TweenService:Create(background, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.1}):Play()
+			TweenService:Create(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Transparency = 0.2}):Play()
+		end)
+
+		button.MouseLeave:Connect(function()
+			TweenService:Create(background, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.25}):Play()
+			TweenService:Create(stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {Transparency = 0.4}):Play()
+		end)
+
+		button.MouseButton1Click:Connect(function()
+			Maximise(Main)
+			task.wait(0.05)
+			snapWindowToViewport(Main)
+		end)
+
+		return container
+	end
+
+	local mobileCenterButton = ensureMobileCenterButton()
+	local function updateCenterButtonVisibility(windowIsMinimised)
+		if not mobileCenterButton then
+			mobileCenterButton = ensureMobileCenterButton()
+		end
+		if mobileCenterButton then
+			mobileCenterButton.Visible = not windowIsMinimised
+		end
+	end
+
+	if mobileCenterButton then
+		Main:GetPropertyChangedSignal("Size"):Connect(function()
+			local isMinimised = Main.Size == MinSize
+			updateCenterButtonVisibility(isMinimised)
+		end)
+		updateCenterButtonVisibility(false)
+	end
+
 	Elements.Template.LayoutOrder = 1000000000
 	Elements.Template.Visible = false
 	Navigation.Tabs["InActive Template"].LayoutOrder = 1000000000
