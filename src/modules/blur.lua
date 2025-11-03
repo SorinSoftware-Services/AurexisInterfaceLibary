@@ -1,8 +1,42 @@
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
 
 local blurBindings = {}
 local blurStepCounter = 0
+
+local compatibilityPlaces = {
+	[16389395869] = true, -- a dusty trip
+}
+
+local compatibilityUniverses = {
+	[5650396773] = true, -- a dusty trip universe
+}
+
+local function hasStrongPostEffect()
+	for _, effect in ipairs(Lighting:GetChildren()) do
+		if effect:IsA("DepthOfFieldEffect") then
+			if effect.Enabled and (effect.NearIntensity > 0.2 or effect.FarIntensity > 0.2) then
+				return true
+			end
+		elseif effect:IsA("BlurEffect") then
+			if effect.Enabled and effect.Size >= 4 then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+local function shouldUseCompatibilityMode()
+	if compatibilityPlaces[game.PlaceId] then
+		return true
+	end
+	if compatibilityUniverses[game.GameId] then
+		return true
+	end
+	return hasStrongPostEffect()
+end
 
 local function nextBlurStepId()
 	blurStepCounter += 1
@@ -71,6 +105,56 @@ local function createBlur(Frame)
 		connections = {}
 	}
 	blurBindings[blurFrame] = binding
+
+	local function attachBaseCleanup()
+		table.insert(binding.connections, blurFrame.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				cleanupBlurBinding(blurFrame)
+			end
+		end))
+
+		if Frame.Destroying then
+			table.insert(binding.connections, Frame.Destroying:Connect(function()
+				cleanupBlurBinding(blurFrame)
+			end))
+		end
+
+		if blurFrame.Destroying then
+			table.insert(binding.connections, blurFrame.Destroying:Connect(function()
+				cleanupBlurBinding(blurFrame)
+			end))
+		end
+	end
+
+	attachBaseCleanup()
+
+	local compatibilityMode = shouldUseCompatibilityMode()
+	binding.compatibilityMode = compatibilityMode
+	if compatibilityMode then
+		blurFrame:SetAttribute("AurexisBlurCompatibility", true)
+
+		local fallback = Instance.new("ImageLabel")
+		fallback.Name = "AurexisBlurFallback"
+		fallback.AnchorPoint = Vector2.new(0.5, 0.5)
+		fallback.Position = UDim2.new(0.5, 0, 0.5, 0)
+		fallback.Size = UDim2.new(1.08, 0, 1.08, 0)
+		fallback.BackgroundTransparency = 1
+		fallback.Image = "rbxassetid://13160452170"
+		fallback.ImageColor3 = Color3.fromRGB(25, 25, 32)
+		fallback.ImageTransparency = 0.82
+		fallback.ScaleType = Enum.ScaleType.Slice
+		fallback.SliceCenter = Rect.new(60, 60, 60, 60)
+		fallback.ZIndex = blurFrame.ZIndex - 1
+		fallback.Parent = blurFrame
+
+		table.insert(binding.connections, blurFrame:GetPropertyChangedSignal("ZIndex"):Connect(function()
+			if fallback.Parent then
+				fallback.ZIndex = blurFrame.ZIndex - 1
+			end
+		end))
+
+		return binding.parts
+	end
 
 	local root = Instance.new("Folder")
 	root.Name = "AurexisBlur_" .. HttpService:GenerateGUID(false)
@@ -262,24 +346,6 @@ local function createBlur(Frame)
 	binding.parts = parts
 	binding.stepId = stepId
 	RunService:BindToRenderStep(stepId, 2000, UpdateOrientation)
-
-	table.insert(binding.connections, blurFrame.AncestryChanged:Connect(function(_, parent)
-		if not parent then
-			cleanupBlurBinding(blurFrame)
-		end
-	end))
-
-	if Frame.Destroying then
-		table.insert(binding.connections, Frame.Destroying:Connect(function()
-			cleanupBlurBinding(blurFrame)
-		end))
-	end
-
-	if blurFrame.Destroying then
-		table.insert(binding.connections, blurFrame.Destroying:Connect(function()
-			cleanupBlurBinding(blurFrame)
-		end))
-	end
 
 	table.insert(binding.connections, workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(ensureRootParent))
 
