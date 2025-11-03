@@ -375,6 +375,8 @@ local function cleanupBlur(guiObject)
 		data.wrapper:Destroy()
 	end
 
+	blurTargets[guiObject] = nil
+
 	if activeBlurCount > 0 then
 		activeBlurCount = activeBlurCount - 1
 	end
@@ -1990,11 +1992,13 @@ FirstTab = false
 	return Window
 end
 
-function Aurexis:SetEnvironmentBlurEnabled(enabled)
+Aurexis.SetEnvironmentBlurEnabled = function(self, enabled)
 	enabled = not not enabled
-	if Aurexis.AllowEnvironmentBlur ~= enabled then
-		Aurexis.AllowEnvironmentBlur = enabled
+	if Aurexis.AllowEnvironmentBlur == enabled then
+		return enabled
 	end
+
+	Aurexis.AllowEnvironmentBlur = enabled
 
 	if not enabled then
 		if sharedDepthOfField then
@@ -2033,7 +2037,7 @@ function Aurexis:SetEnvironmentBlurEnabled(enabled)
 	return enabled
 end
 
-function Aurexis:GetEnvironmentBlurEnabled()
+Aurexis.GetEnvironmentBlurEnabled = function()
 	return Aurexis.AllowEnvironmentBlur
 end
 
