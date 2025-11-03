@@ -1,7 +1,5 @@
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
-local Lighting = game:GetService("Lighting")
-
 local blurBindings = {}
 local blurStepCounter = 0
 
@@ -13,29 +11,8 @@ local compatibilityUniverses = {
 	[5650396773] = true, -- a dusty trip universe
 }
 
-local function hasStrongPostEffect()
-	for _, effect in ipairs(Lighting:GetChildren()) do
-		if effect:IsA("DepthOfFieldEffect") then
-			if effect.Enabled and (effect.NearIntensity > 0.2 or effect.FarIntensity > 0.2) then
-				return true
-			end
-		elseif effect:IsA("BlurEffect") then
-			if effect.Enabled and effect.Size >= 4 then
-				return true
-			end
-		end
-	end
-	return false
-end
-
 local function shouldUseCompatibilityMode()
-	if compatibilityPlaces[game.PlaceId] then
-		return true
-	end
-	if compatibilityUniverses[game.GameId] then
-		return true
-	end
-	return hasStrongPostEffect()
+	return compatibilityPlaces[game.PlaceId] or compatibilityUniverses[game.GameId] or false
 end
 
 local function nextBlurStepId()
