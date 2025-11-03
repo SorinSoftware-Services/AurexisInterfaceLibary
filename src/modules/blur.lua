@@ -1,5 +1,6 @@
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+
 local blurBindings = {}
 local blurStepCounter = 0
 
@@ -105,9 +106,7 @@ local function createBlur(Frame)
 
 	attachBaseCleanup()
 
-	local compatibilityMode = shouldUseCompatibilityMode()
-	binding.compatibilityMode = compatibilityMode
-	if compatibilityMode then
+	if shouldUseCompatibilityMode() then
 		blurFrame:SetAttribute("AurexisBlurCompatibility", true)
 
 		local fallback = Instance.new("ImageLabel")
