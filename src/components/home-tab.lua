@@ -75,6 +75,47 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 
 	HomeTabPage.player.Text.Text = string.format("%s, %s", getGreeting(), Players.LocalPlayer.DisplayName)
 
+	local function setCardTextSizes(root, titleSize, valueSize, subtitleSize)
+		if not root then
+			return
+		end
+		for _, desc in ipairs(root:GetDescendants()) do
+			if desc:IsA("TextLabel") then
+				if desc.Name == "Title" and titleSize then
+					desc.TextSize = titleSize
+				elseif desc.Name == "Value" and valueSize then
+					desc.TextSize = valueSize
+				elseif (desc.Name == "Subtitle" or desc.Name == "Description") and subtitleSize then
+					desc.TextSize = subtitleSize
+				end
+			end
+		end
+	end
+
+	local fontsAdjusted = false
+
+	local function applyCardTextOverrides()
+		if fontsAdjusted then
+			return
+		end
+		local detailsHolder = HomeTabPage:FindFirstChild("detailsholder")
+		local dashboard = detailsHolder and detailsHolder:FindFirstChild("dashboard")
+		if not dashboard then
+			return
+		end
+		local friendsCard = dashboard:FindFirstChild("Friends", true)
+		if friendsCard then
+			setCardTextSizes(friendsCard, 16, 19, 14)
+		end
+		local serverCard = dashboard:FindFirstChild("Server", true)
+		if serverCard then
+			setCardTextSizes(serverCard, 16, 18, 14)
+		end
+		if friendsCard or serverCard then
+			fontsAdjusted = true
+		end
+	end
+
 	local exec = (isStudio and "Studio (Debug)" or identifyexecutor()) or "Unknown"
 	HomeTabPage.detailsholder.dashboard.Client.Title.Text =  exec .. " User"
 
@@ -148,6 +189,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		if not friendsGui then
 			return
 		end
+
+		applyCardTextOverrides()
 
 		friendsCooldown = 25
 
@@ -434,6 +477,8 @@ return function(Window, Aurexis, Elements, Navigation, GetIcon, Kwargify, tween,
 		if not friendsGui then
 			break
 		end
+
+		applyCardTextOverrides()
 
 		-- Serverinformationen aktualisieren
 		serverInfo.Players.Value.Text = #Players:GetPlayers() .. " playing"

@@ -34,13 +34,14 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
 
 local Release = "Pre Release [v 0.2.0]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
 	Options = {}, 
+	AllowEnvironmentBlur = true,
 	ThemeGradient = ColorSequence.new{
 		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(173, 216, 255)), -- baby blue
 		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(100, 149, 237)), -- medium blue
@@ -58,6 +59,18 @@ local Player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
+
+local compatibilityPlaces = {
+	[16389395869] = true, -- a dusty trip
+}
+
+local compatibilityUniverses = {
+	[5650396773] = true, -- a dusty trip universe
+}
+
+if compatibilityPlaces[game.PlaceId] or compatibilityUniverses[game.GameId] then
+	Aurexis.AllowEnvironmentBlur = false
+end
 
 local isStudio
 local website = "https://scripts.sorinservice.online"
@@ -297,6 +310,7 @@ end
 
 local cleanedLegacyBlur = false
 local blurBindings = {}
+local blurTargets = setmetatable({}, { __mode = "k" })
 local blurUid = 0
 local sharedDepthOfField
 local activeBlurCount = 0
@@ -316,6 +330,10 @@ local function ensureBlurRoot()
 end
 
 local function ensureDepthOfField()
+	if not Aurexis.AllowEnvironmentBlur then
+		return nil
+	end
+
 	if isStudio then
 		return nil
 	end
@@ -357,6 +375,8 @@ local function cleanupBlur(guiObject)
 		data.wrapper:Destroy()
 	end
 
+	blurTargets[guiObject] = nil
+
 	if activeBlurCount > 0 then
 		activeBlurCount = activeBlurCount - 1
 	end
@@ -367,6 +387,10 @@ local function cleanupBlur(guiObject)
 end
 
 local function ensureGuiBlur(guiObject)
+	if not Aurexis.AllowEnvironmentBlur then
+		return nil
+	end
+
 	if blurBindings[guiObject] then
 		return blurBindings[guiObject]
 	end
@@ -569,6 +593,7 @@ local function ensureGuiBlur(guiObject)
 		parts = parts,
 		uid = uid,
 	}
+	blurTargets[guiObject] = true
 
 	activeBlurCount = activeBlurCount + 1
 	local effect = ensureDepthOfField()
@@ -611,7 +636,10 @@ local function BlurModule(Frame)
 
 	if not guiObject:GetAttribute("AurexisBlurApplied") then
 		guiObject:SetAttribute("AurexisBlurApplied", true)
-		ensureGuiBlur(guiObject)
+		blurTargets[guiObject] = true
+		if Aurexis.AllowEnvironmentBlur then
+			ensureGuiBlur(guiObject)
+		end
 	end
 
 	local shadow = Instance.new("ImageLabel")
@@ -640,6 +668,7 @@ local function BlurModule(Frame)
 		end
 
 		cleanupBlur(guiObject)
+		blurTargets[guiObject] = nil
 
 		zConn:Disconnect()
 		if shadow.Parent then
@@ -1962,6 +1991,57 @@ FirstTab = false
 
 	return Window
 end
+
+Aurexis.SetEnvironmentBlurEnabled = function(self, enabled)
+	enabled = not not enabled
+	if Aurexis.AllowEnvironmentBlur == enabled then
+		return enabled
+	end
+
+	Aurexis.AllowEnvironmentBlur = enabled
+
+	if not enabled then
+		if sharedDepthOfField then
+			sharedDepthOfField.Enabled = false
+			if sharedDepthOfField.Parent == Lighting then
+				sharedDepthOfField.Parent = nil
+			end
+			sharedDepthOfField = nil
+		end
+		local existing = Lighting:FindFirstChild("AurexisDepthOfField")
+		if existing then
+			existing.Enabled = false
+			existing:Destroy()
+		end
+		local toCleanup = {}
+		for guiObject in pairs(blurBindings) do
+			table.insert(toCleanup, guiObject)
+		end
+		for _, guiObject in ipairs(toCleanup) do
+			if guiObject then
+				cleanupBlur(guiObject)
+			end
+		end
+	else
+		local effect = ensureDepthOfField()
+		if effect then
+			effect.Enabled = activeBlurCount > 0
+		end
+		for guiObject in pairs(blurTargets) do
+			if guiObject and guiObject.Parent then
+				ensureGuiBlur(guiObject)
+			end
+		end
+	end
+
+	return enabled
+end
+
+Aurexis.GetEnvironmentBlurEnabled = function()
+	return Aurexis.AllowEnvironmentBlur
+end
+
+Aurexis:SetEnvironmentBlurEnabled(Aurexis.AllowEnvironmentBlur)
 
 function Aurexis:Destroy()
     Main.Visible = false
