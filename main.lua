@@ -34,13 +34,14 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
 
 local Release = "Pre Release [v 0.2.0]"
 
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
 	Options = {}, 
+	AllowEnvironmentBlur = false,
 	ThemeGradient = ColorSequence.new{
 		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(173, 216, 255)), -- baby blue
 		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(100, 149, 237)), -- medium blue
@@ -58,8 +59,6 @@ local Player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
-
-local isMobileDevice = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
 local isStudio
 local website = "https://scripts.sorinservice.online"
@@ -318,6 +317,10 @@ local function ensureBlurRoot()
 end
 
 local function ensureDepthOfField()
+	if not Aurexis.AllowEnvironmentBlur then
+		return nil
+	end
+
 	if isStudio then
 		return nil
 	end
@@ -681,7 +684,6 @@ local AurexisUI = isStudio and script.Parent:WaitForChild("Aurexis UI") or game:
 
 local SizeBleh = nil
 local mainWindowFrame = nil
-local mobileCenterButton = nil
 
 local function Hide(Window, bind, notif)
 	SizeBleh = Window.Size
@@ -700,9 +702,6 @@ local function Hide(Window, bind, notif)
 
 	if Window == mainWindowFrame then
 		setTopbarVisible(false)
-		if isMobileDevice and mobileCenterButton then
-			mobileCenterButton.Visible = false
-		end
 	else
 		local controlsContainer = nil
 		if typeof(Window) == "Instance" then
@@ -818,153 +817,6 @@ if not minimizeButton and closeButton then
 			icon.ImageRectSize = Vector2.new(0, 0)
 		end
 	end
-end
-
-local function centerMainWindow()
-	if not mainWindowFrame or not mainWindowFrame.Parent then
-		return
-	end
-
-	local desiredAnchor = Vector2.new(0.5, 0.5)
-	if mainWindowFrame.AnchorPoint ~= desiredAnchor then
-		mainWindowFrame.AnchorPoint = desiredAnchor
-	end
-
-	mainWindowFrame.Position = UDim2.fromScale(0.5, 0.5)
-end
-
-local function setupMobileKeySystem(keyFrame: Frame?)
-	if not isMobileDevice or not keyFrame then
-		return
-	end
-
-	if keyFrame:GetAttribute("MobileSetupComplete") then
-		return
-	end
-
-	keyFrame:SetAttribute("MobileSetupComplete", true)
-	if keyFrame.AnchorPoint ~= Vector2.new(0.5, 0.5) then
-		keyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	end
-	keyFrame.Position = UDim2.fromScale(0.5, 0.5)
-	local scale = keyFrame:FindFirstChild("MobileScale")
-	if not scale then
-		scale = Instance.new("UIScale")
-		scale.Name = "MobileScale"
-		scale.Parent = keyFrame
-	end
-
-	local function ensureBaseSize(): boolean
-		if keyFrame:GetAttribute("MobileBaseWidth") and keyFrame:GetAttribute("MobileBaseHeight") then
-			return true
-		end
-
-		local absSize = keyFrame.AbsoluteSize
-		if absSize.X > 0 and absSize.Y > 0 then
-			keyFrame:SetAttribute("MobileBaseWidth", absSize.X)
-			keyFrame:SetAttribute("MobileBaseHeight", absSize.Y)
-			return true
-		end
-
-		return false
-	end
-
-	local function updateScale()
-		if not keyFrame.Visible then
-			return
-		end
-
-		task.defer(function()
-			if keyFrame.AnchorPoint ~= Vector2.new(0.5, 0.5) then
-				keyFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-			end
-
-			keyFrame.Position = UDim2.fromScale(0.5, 0.5)
-
-			if not ensureBaseSize() then
-				task.delay(0.05, updateScale)
-				return
-			end
-
-			local baseWidth = keyFrame:GetAttribute("MobileBaseWidth")
-			local baseHeight = keyFrame:GetAttribute("MobileBaseHeight")
-			if not baseWidth or not baseHeight or baseWidth <= 0 or baseHeight <= 0 then
-				return
-			end
-
-			local viewport = Camera.ViewportSize
-			local availableWidth = math.max(viewport.X - 48, viewport.X * 0.8)
-			local availableHeight = math.max(viewport.Y - 120, viewport.Y * 0.7)
-			local scaleFactor = math.min(availableWidth / baseWidth, availableHeight / baseHeight, 1)
-			scale.Scale = math.clamp(scaleFactor, 0.6, 1)
-		end)
-	end
-
-	keyFrame:GetPropertyChangedSignal("Visible"):Connect(function()
-		if keyFrame.Visible then
-			keyFrame:SetAttribute("MobileBaseWidth", nil)
-			keyFrame:SetAttribute("MobileBaseHeight", nil)
-			task.defer(updateScale)
-		end
-	end)
-
-	Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-		if keyFrame.Parent and keyFrame.Visible then
-			updateScale()
-		end
-	end)
-
-	updateScale()
-end
-
-if isMobileDevice then
-	mobileCenterButton = AurexisUI:FindFirstChild("MobileCenterButton")
-	if mobileCenterButton and not mobileCenterButton:IsA("TextButton") then
-		mobileCenterButton:Destroy()
-		mobileCenterButton = nil
-	end
-
-	if not mobileCenterButton then
-		mobileCenterButton = Instance.new("TextButton")
-		mobileCenterButton.Name = "MobileCenterButton"
-		mobileCenterButton.AnchorPoint = Vector2.new(0.5, 0)
-		mobileCenterButton.AutoButtonColor = false
-		mobileCenterButton.BackgroundColor3 = Color3.fromRGB(44, 42, 54)
-		mobileCenterButton.BackgroundTransparency = 0.2
-		mobileCenterButton.BorderSizePixel = 0
-		mobileCenterButton.Position = UDim2.new(0.5, 0, 0, 18)
-		mobileCenterButton.Size = UDim2.fromOffset(140, 38)
-		mobileCenterButton.Text = "Zentrieren"
-		mobileCenterButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-		mobileCenterButton.TextSize = 16
-		mobileCenterButton.Font = Enum.Font.GothamSemibold
-		mobileCenterButton.Visible = false
-		mobileCenterButton.ZIndex = 10
-		mobileCenterButton.Parent = AurexisUI
-
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 14)
-		corner.Parent = mobileCenterButton
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Thickness = 1
-		stroke.Color = Color3.fromRGB(86, 84, 102)
-		stroke.Transparency = 0.25
-		stroke.Parent = mobileCenterButton
-	end
-
-	if mobileCenterButton and not mobileCenterButton:GetAttribute("AurexisCenterConnection") then
-		mobileCenterButton:SetAttribute("AurexisCenterConnection", true)
-		mobileCenterButton.MouseButton1Click:Connect(function()
-			centerMainWindow()
-		end)
-	end
-
-	Camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-		if mobileCenterButton and mobileCenterButton.Parent and mobileCenterButton.Visible then
-			centerMainWindow()
-		end
-	end)
 end
 
 local orderedButtons = {}
@@ -1274,7 +1126,6 @@ local LayeredLoadingSpinner = createLayeredSpinner(LoadingFrame and LoadingFrame
 local Tabs = Navigation.Tabs
 local Notifications = AurexisUI.Notifications
 local KeySystem : Frame = Main.KeySystem
-setupMobileKeySystem(KeySystem)
 
 -- local function LoadConfiguration(Configuration, autoload)
 -- 	local Data = HttpService:JSONDecode(Configuration)
@@ -1440,12 +1291,6 @@ local function Unhide(Window, currentTab)
 	Window.Size = SizeBleh
 	Window.Elements.Visible = true
 	Window.Visible = true
-	if Window == mainWindowFrame and isMobileDevice then
-		centerMainWindow()
-		if mobileCenterButton then
-			mobileCenterButton.Visible = true
-		end
-	end
 	task.wait()
 	tween(Window, {BackgroundTransparency = 0.2})
 	tween(Window.Elements, {BackgroundTransparency = 0.08})
@@ -1582,9 +1427,6 @@ function Aurexis:CreateWindow(WindowSettings)
 	Main.Size = MainSize
 	Main.Size = UDim2.fromOffset(Main.Size.X.Offset - 70, Main.Size.Y.Offset - 55)
 	Main.Parent.ShadowHolder.Size = Main.Size
-	if isMobileDevice then
-		centerMainWindow()
-	end
 	LoadingFrame.Frame.Frame.Title.TextTransparency = 1
 	LoadingFrame.Frame.Frame.Subtitle.TextTransparency = 1
 	LoadingFrame.Version.TextTransparency = 1
@@ -1677,9 +1519,6 @@ function Aurexis:CreateWindow(WindowSettings)
 			local AttemptsRemaining = math.random(2, 5)
 
 			KeySystem.Visible = true
-			if isMobileDevice then
-				centerMainWindow()
-			end
 			KeySystem.Title.Text = WindowSettings.KeySettings.Title
 			KeySystem.Subtitle.Text = WindowSettings.KeySettings.Subtitle
 			KeySystem.textshit.Text = WindowSettings.KeySettings.Note
@@ -2005,15 +1844,12 @@ FirstTab = false
 
 	Elements.Parent.Visible = true
 	tween(Elements.Parent, {BackgroundTransparency = 0.1})
-Navigation.Visible = true
-tween(Navigation.Line, {BackgroundTransparency = 0})
+	Navigation.Visible = true
+	tween(Navigation.Line, {BackgroundTransparency = 0})
 
-setTopbarVisible(true)
-if isMobileDevice and mobileCenterButton then
-	mobileCenterButton.Visible = true
-end
+	setTopbarVisible(true)
 
-local function getTopbarIcon(container)
+	local function getTopbarIcon(container)
 		if not container then
 			return nil
 		end
@@ -2026,9 +1862,6 @@ local function getTopbarIcon(container)
 			dragBar.Visible = false
 		end
 		Window.State = false
-		if isMobileDevice and mobileCenterButton then
-			mobileCenterButton.Visible = false
-		end
 		if UserInputService.KeyboardEnabled == false then
 			AurexisUI.MobileSupport.Visible = true
 		end
@@ -2096,9 +1929,6 @@ local function getTopbarIcon(container)
 				end
 			else
 				Maximise(Main)
-				if isMobileDevice then
-					centerMainWindow()
-				end
 				if dragBar then
 					dragBar.Visible = true
 				end
@@ -2138,11 +1968,34 @@ local function getTopbarIcon(container)
 	return Window
 end
 
+function Aurexis:SetEnvironmentBlurEnabled(enabled)
+	enabled = not not enabled
+	if Aurexis.AllowEnvironmentBlur == enabled then
+		return enabled
+	end
+
+	Aurexis.AllowEnvironmentBlur = enabled
+
+	if not enabled then
+		if sharedDepthOfField then
+			sharedDepthOfField.Enabled = false
+		end
+	else
+		local effect = ensureDepthOfField()
+		if effect then
+			effect.Enabled = activeBlurCount > 0
+		end
+	end
+
+	return enabled
+end
+
+function Aurexis:GetEnvironmentBlurEnabled()
+	return Aurexis.AllowEnvironmentBlur
+end
+
 function Aurexis:Destroy()
     Main.Visible = false
-	if mobileCenterButton then
-		mobileCenterButton.Visible = false
-	end
     for _, Notification in ipairs(Notifications:GetChildren()) do
         if Notification.ClassName == "Frame" then
             Notification.Visible = false
