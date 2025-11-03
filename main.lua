@@ -31,7 +31,7 @@ Luna Interface Suite
 by Nebula Softworks
 
 ]]
-print("Aurexis Dev loaded")
+
 
 
 local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
@@ -41,7 +41,7 @@ local Release = "Pre Release [v 0.2.0]"
 local Aurexis = { 
 	Folder = "AurexisLibrary UI", 
 	Options = {}, 
-	AllowEnvironmentBlur = false,
+	AllowEnvironmentBlur = true,
 	ThemeGradient = ColorSequence.new{
 		ColorSequenceKeypoint.new(0.00, Color3.fromRGB(173, 216, 255)), -- baby blue
 		ColorSequenceKeypoint.new(0.50, Color3.fromRGB(100, 149, 237)), -- medium blue
@@ -59,6 +59,18 @@ local Player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
+
+local compatibilityPlaces = {
+	[16389395869] = true, -- a dusty trip
+}
+
+local compatibilityUniverses = {
+	[5650396773] = true, -- a dusty trip universe
+}
+
+if compatibilityPlaces[game.PlaceId] or compatibilityUniverses[game.GameId] then
+	Aurexis.AllowEnvironmentBlur = false
+end
 
 local isStudio
 local website = "https://scripts.sorinservice.online"
