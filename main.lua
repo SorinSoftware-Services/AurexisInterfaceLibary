@@ -34,7 +34,7 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main/"
 
 local Release = "Pre Release [v 0.2.0]"
 
@@ -893,6 +893,12 @@ if not minimizeButton and closeButton then
 			icon.ImageRectSize = Vector2.new(0, 0)
 		end
 	end
+end
+
+local allowToggleButton = UserInputService.KeyboardEnabled ~= false
+if toggleSizeButton and not allowToggleButton then
+	toggleSizeButton.Visible = false
+	toggleSizeButton = nil
 end
 
 local orderedButtons = {}
