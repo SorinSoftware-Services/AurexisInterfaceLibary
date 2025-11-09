@@ -60,6 +60,58 @@ local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
 
+local keycodeLookup = {}
+do
+	for _, code in ipairs(Enum.KeyCode:GetEnumItems()) do
+		keycodeLookup[string.lower(code.Name)] = code
+	end
+end
+
+local function normalizeKeyCode(key)
+	if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
+		return key
+	end
+
+	if type(key) == "number" then
+		for _, code in ipairs(Enum.KeyCode:GetEnumItems()) do
+			if code.Value == key then
+				return code
+			end
+		end
+	end
+
+	if type(key) == "string" then
+		local trimmed = key:gsub("^%s+", ""):gsub("%s+$", "")
+		trimmed = trimmed:gsub("Enum.KeyCode%.", "")
+		trimmed = trimmed:gsub("%s+", "")
+		if trimmed == "" then
+			return nil
+		end
+
+		local lookup = keycodeLookup[string.lower(trimmed)]
+		if lookup then
+			return lookup
+		end
+	end
+
+	return nil
+end
+
+local function keyCodeLabel(key)
+	if typeof(key) == "EnumItem" and key.EnumType == Enum.KeyCode then
+		return key.Name
+	end
+	if type(key) == "string" then
+		local trimmed = key:gsub("^%s+", ""):gsub("%s+$", "")
+		trimmed = trimmed:gsub("Enum.KeyCode%.", "")
+		trimmed = trimmed:gsub("%s+", "")
+		if trimmed ~= "" then
+			return trimmed
+		end
+	end
+	return "Unknown"
+end
+
 local compatibilityPlaces = {
 	[16389395869] = true, -- a dusty trip
 }
@@ -1415,7 +1467,8 @@ function Aurexis:CreateWindow(WindowSettings)
 		ConfigSettings = {},
 
 		KeySystem = false,
-		KeySettings = {}
+		KeySettings = {},
+		ToggleKey = Enum.KeyCode.K
 	}, WindowSettings or {})
 
 	WindowSettings.ConfigSettings = Kwargify({
@@ -1441,7 +1494,41 @@ function Aurexis:CreateWindow(WindowSettings)
 
 	local Passthrough = false
 
-	local Window = { Bind = Enum.KeyCode.K, CurrentTab = nil, State = true, Size = false, Settings = nil }
+	local defaultToggleKey = normalizeKeyCode(WindowSettings.ToggleKey) or Enum.KeyCode.K
+	local Window = {
+		Bind = defaultToggleKey,
+		BindName = keyCodeLabel(defaultToggleKey),
+		CurrentTab = nil,
+		State = true,
+		Size = false,
+		Settings = nil
+	}
+
+	local function setWindowToggleBind(newBind)
+		local resolved = normalizeKeyCode(newBind)
+		if not resolved or resolved == Enum.KeyCode.Unknown then
+			return false, "Invalid key"
+		end
+		if resolved == Window.Bind then
+			return true, Window.BindName
+		end
+
+		Window.Bind = resolved
+		Window.BindName = keyCodeLabel(resolved)
+		return true, Window.BindName
+	end
+
+	function Window:SetToggleBind(newBind)
+		return setWindowToggleBind(newBind)
+	end
+
+	function Window:GetToggleBind()
+		return Window.Bind
+	end
+
+	function Window:GetToggleBindName()
+		return Window.BindName or keyCodeLabel(Window.Bind)
+	end
 
 	Main.Title.Title.Text = WindowSettings.Name
 	Main.Title.subtitle.Text = WindowSettings.Subtitle
