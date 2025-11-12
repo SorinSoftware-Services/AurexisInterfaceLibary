@@ -118,6 +118,8 @@ local compatibilityPlaces = {
 
 local compatibilityUniverses = {
 	[5650396773] = true, -- a dusty trip universe
+	[2343453454] = false -- break your Bones
+	[6401952734] = true -- PETS GO!
 }
 
 if compatibilityPlaces[game.PlaceId] or compatibilityUniverses[game.GameId] then
