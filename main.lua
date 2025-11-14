@@ -34,7 +34,7 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/Developer/"
+local BASE_URL = "https://scripts.sorinservice.online/librarys/AurexisInterface"
 
 local Release = "Pre Release [v 0.1.3]"
 
@@ -119,6 +119,7 @@ local compatibilityPlaces = {
 local compatibilityUniverses = {
 	[5650396773] = true, -- a dusty trip universe
 	[7848646653] = true, -- Break your Bones
+	[6401952734] = true, -- PETS GO!
 }
 
 if compatibilityPlaces[game.PlaceId] or compatibilityUniverses[game.GameId] then
@@ -136,7 +137,20 @@ end
 -- Universal remote require helper
 local function requireRemote(path)
 	local ok, result = pcall(function()
-		return loadstring(game:HttpGet(BASE_URL .. path))()
+		local body = game:HttpGet(BASE_URL .. path)
+		-- sanitize potential invisible Unicode characters from remote code
+		local replacements = {
+			{ string.char(0xC2, 0xA0), " " },      -- NBSP -> space
+			{ string.char(0xE2, 0x80, 0x8B), "" }, -- ZWSP
+			{ string.char(0xE2, 0x80, 0x8C), "" }, -- ZWNJ
+			{ string.char(0xE2, 0x80, 0x8D), "" }, -- ZWJ
+			{ string.char(0xEF, 0xBB, 0xBF), "" }, -- BOM
+		}
+		for i = 1, #replacements do
+			local patt, repl = replacements[i][1], replacements[i][2]
+			body = body:gsub(patt, repl)
+		end
+		return loadstring(body)()
 	end)
 	if ok then
 		return result
@@ -149,6 +163,9 @@ end
 -- Load Icon Module
 local IconModule = requireRemote("src/icons.lua")
 
+-- Toggle key service (for loaders / consumers)
+local ToggleKeyService = requireRemote("src/services/toggle_key.lua")
+Aurexis.ToggleKeyService = ToggleKeyService
 
 -- Other Variables
 local request = (syn and syn.request) or (http and http.request) or http_request or nil
