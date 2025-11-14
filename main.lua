@@ -34,7 +34,7 @@ by Nebula Softworks
 
 
 
-local BASE_URL = "https://scripts.sorinservice.online/librarys/AurexisInterface"
+local BASE_URL = "https://raw.githubusercontent.com/SorinSoftware-Services/AurexisInterfaceLibrary/main"
 
 local Release = "Pre Release [v 0.1.3]"
 
@@ -59,6 +59,7 @@ local Player = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
+local ContextActionService = game:GetService("ContextActionService")
 
 local keycodeLookup = {}
 do
@@ -131,6 +132,11 @@ local website = "https://scripts.sorinservice.online"
 
 if RunService:IsStudio() then
 	isStudio = true
+end
+
+-- On touch devices, disable heavy environment blur by default
+if UserInputService.TouchEnabled and not isStudio then
+	Aurexis.AllowEnvironmentBlur = false
 end
 
 
@@ -779,6 +785,27 @@ local AurexisUI = isStudio and script.Parent:WaitForChild("Aurexis UI") or game:
 local SizeBleh = nil
 local mainWindowFrame = nil
 
+-- Helper to prevent camera movement on mobile while the main window is open
+local MOBILE_BLOCK_ACTION = "Aurexis_BlockMobileTouch"
+local function setMobileInputBlocked(block)
+	if not UserInputService.TouchEnabled or isStudio then
+		return
+	end
+
+	if block then
+		ContextActionService:BindAction(
+			MOBILE_BLOCK_ACTION,
+			function()
+				return Enum.ContextActionResult.Sink
+			end,
+			false,
+			Enum.UserInputType.Touch
+		)
+	else
+		ContextActionService:UnbindAction(MOBILE_BLOCK_ACTION)
+	end
+end
+
 local function Hide(Window, bind, notif)
 	SizeBleh = Window.Size
 	bind = string.split(tostring(bind), "Enum.KeyCode.")
@@ -796,6 +823,7 @@ local function Hide(Window, bind, notif)
 
 	if Window == mainWindowFrame then
 		setTopbarVisible(false)
+		setMobileInputBlocked(false)
 	else
 		local controlsContainer = nil
 		if typeof(Window) == "Instance" then
@@ -1402,6 +1430,7 @@ local function Unhide(Window, currentTab)
 
 	if Window == mainWindowFrame then
 		setTopbarVisible(true)
+		setMobileInputBlocked(true)
 	else
 		local controlsContainer = nil
 		if typeof(Window) == "Instance" then
@@ -1448,14 +1477,26 @@ local function Unhide(Window, currentTab)
 end
 
 local MainSize
-local MinSize 
-if Camera.ViewportSize.X > 774 and Camera.ViewportSize.Y > 503 then
-	MainSize = UDim2.fromOffset(675, 424)
-	MinSize = UDim2.fromOffset(500, 42)
-else
-	MainSize = UDim2.fromOffset(Camera.ViewportSize.X - 100, Camera.ViewportSize.Y - 100)
-	MinSize = UDim2.fromOffset(Camera.ViewportSize.X - 275, 42)
+local MinSize
+
+local function computeWindowSizes()
+	local viewportSize = Camera and Camera.ViewportSize or Vector2.new(1280, 720)
+
+	if viewportSize.X > 774 and viewportSize.Y > 503 then
+		-- Desktop / larger screens: keep original default window size
+		MainSize = UDim2.fromOffset(675, 424)
+		MinSize = UDim2.fromOffset(500, 42)
+	else
+		-- Smaller / mobile screens: use dynamic padding instead of fixed offsets
+		local widthPadding = math.clamp(math.floor(viewportSize.X * 0.10), 40, 140)
+		local heightPadding = math.clamp(math.floor(viewportSize.Y * 0.14), 40, 140)
+
+		MainSize = UDim2.fromOffset(viewportSize.X - widthPadding, viewportSize.Y - heightPadding)
+		MinSize = UDim2.fromOffset(viewportSize.X - math.max(widthPadding * 2.5, 275), 42)
+	end
 end
+
+computeWindowSizes()
 
 local function Maximise(Window)
 	local toggleImageLabel = toggleSizeButton and (toggleSizeButton:FindFirstChildWhichIsA("ImageButton") or toggleSizeButton:FindFirstChildWhichIsA("ImageLabel"))
@@ -1798,6 +1839,25 @@ function Aurexis:CreateWindow(WindowSettings)
 	Draggable(AurexisUI.MobileSupport, AurexisUI.MobileSupport)
 	if dragBar then Draggable(dragInteract, Main, true, 255) end
 
+	-- Recalculate window size when orientation / viewport changes
+	local function updateWindowSizeForViewport()
+		computeWindowSizes()
+		if Window.Size then
+			-- minimized
+			Main.Size = MinSize
+		else
+			Main.Size = MainSize
+		end
+		Main.Parent.ShadowHolder.Size = Main.Size
+	end
+
+	if Camera then
+		Camera:GetPropertyChangedSignal("ViewportSize"):Connect(updateWindowSizeForViewport)
+	end
+
+	-- Block camera movement on mobile while main window is open
+	setMobileInputBlocked(true)
+
 	Elements.Template.LayoutOrder = 1000000000
 	Elements.Template.Visible = false
 	Navigation.Tabs["InActive Template"].LayoutOrder = 1000000000
@@ -2022,6 +2082,7 @@ FirstTab = false
 			if dragBar then
 				dragBar.Visible = false
 			end
+			setMobileInputBlocked(false)
 			Aurexis:Destroy()
 		end)
 		closeButton.MouseEnter:Connect(function()
